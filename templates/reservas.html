@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reservas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stilos.css') }}">
+</head>
+<body>
+    <div class="banner">
+        <h1>SELECCIONA EL TOUR DE TU PREFERENCIA</h1>
+        <nav>
+            <ul>
+                <li><a href="/">Inicio</a></li>
+                <li><a href="/reservas.html">Reservas</a></li>
+                <li><a href="/pagos.html">Pagos</a></li>
+                <li><a href="/contactanos.html">Contacto</a></li>
+            </ul>
+        </nav>
+    </div>
+    
+    <h2>Gestión de Reservas</h2>
+
+    <section class="tour-section">
+        <h3>1. Reservas de Tours Definidos:</h3>
+
+        <div class="tour">
+            <img src="https://www.cbonlinecali.com/wp-content/uploads/2022/04/Alta-Guajira-majestuosidad-en-el-punto-mas-al-norte-de-Suramerica.jpg" alt="Tour 1">
+            <h4>Tour a la Playa</h4>
+            <h5>$150.000 - $200.000 COP</h5>
+            <p>Incluye actividades acuáticas, transporte y almuerzo, lo que lo convierte en un paquete completo. Además, las playas suelen ser destinos populares.</p>
+            <button onclick="location.href='/pagos.html?tour=Tour Playa'">Reservar</button>
+        </div>
+
+        <div class="tour">
+            <img src="https://media.viajando.travel/p/02c9b8a2ed0853f60f1eab447baa9053/adjuntos/236/imagenes/000/561/0000561672/1200x675/smart/laguajiragastronomiajpg.jpg" alt="Tour 2">
+            <h4>Tour Gastronomico</h4>
+            <h5>$120.000 - $180.000 COP</h5>
+            <p>Un tour gastronómico que implica degustaciones de platos típicos en diferentes restaurantes y lugares representativos puede tener un costo moderado, dependiendo de los sitios visitados y la cantidad de alimentos incluidos.</p>
+            <button onclick="location.href='/pagos.html?tour=Tour Gastronomico'">Reservar</button>
+        </div>
+
+        <div class="tour">
+            <img src="https://cloudfront-us-east-1.images.arcpublishing.com/elespectador/IUXI6HWRIBH3VHX7CILICO6IWE.png" alt="Tour 3">
+            <h4>Tour Cultural</h4>
+            <h5>$130.000 - $180.000 COP</h5>
+            <p>Un recorrido que resalta la cultura Wayuu y sitios históricos de La Guajira tiene un valor importante por la riqueza cultural y el conocimiento que aporta. Incluyendo guías especializados, visitas a museos y artesanos.</p>
+            <button onclick="location.href='/pagos.html?tour=Tour Cultural'">Reservar</button>
+        </div>
+
+        <div class="tour">
+            <img src="https://www.familysearch.org/es/wiki/img_auth.php/thumb/7/7f/Departamento_de_La_Guajira%2C_Colombia_Mapa.png/500px-Departamento_de_La_Guajira%2C_Colombia_Mapa.png" alt="Tour 3">
+            <h4>Tour Departamental</h4>
+            <h5>$180.000 - $250.000 COP</h5>
+            <p>Este tipo de tour suele abarcar varios municipios, lo que implica más transporte y visitas a diferentes sitios históricos, lo que puede justificar un precio mayor.</p>
+            <button onclick="location.href='/pagos.html?tour=Tour Departamental'">Reservar</button>
+        </div>
+
+    </section>
+
+    <section class="tour-section">
+        <h3>2. Reservas de Tours Personalizados:</h3>
+        <div class="info-box">
+            <p>Para los tours personalizados, el sistema ajustará el tour en función del presupuesto ingresado por el cliente. Las restricciones incluyen:</p>
+            <ul>
+                <li><strong>Destinos:</strong> Limitados a aquellos que no excedan un día si el presupuesto es bajo.</li>
+                <li><strong>Transporte:</strong> El presupuesto debe cubrir al menos un medio de transporte.</li>
+                <li><strong>Comida:</strong> Opcional, pero si el cliente desea incluirla, el presupuesto debe cubrirla.</li>
+                <li><strong>Parámetros ajustables:</strong> Se ajustarán según la comodidad y duración del trayecto.</li>
+            </ul>
+        </div>
+
+        <div class="custom-tour-form">
+            <h3>Personaliza tu tour</h3>
+            <label for="presupuesto">Ingresa tu presupuesto (COP):</label>
+            <input type="number" id="presupuesto" placeholder="Ingrese su presupuesto en COP">
+            <button onclick="generarOpciones()">Generar Opciones</button>
+
+            <div id="opciones-tour" style="display:none;">
+                <h3>Opciones disponibles</h3>
+                <p id="destino">Destino: </p>
+                <p id="transporte">Transporte: </p>
+                <p id="comida">Comida: </p>
+                <p id="duracion">Duración del Tour: </p>
+                <button onclick="location.href='/pagos.html?tour=Tour Personalizado'">Confirmar Tour Personalizado</button>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2024 Cactours</p>
+    </footer>
+
+    <script>
+        function generarOpciones() {
+            const presupuesto = document.getElementById("presupuesto").value;
+            const opcionesTour = document.getElementById("opciones-tour");
+            const destino = document.getElementById("destino");
+            const transporte = document.getElementById("transporte");
+            const comida = document.getElementById("comida");
+            const duracion = document.getElementById("duracion");
+
+            // Ajustar opciones según el presupuesto
+            if (presupuesto < 150000) {
+                destino.innerText = "Destino: Playa Cercana";
+                transporte.innerText = "Transporte: Bus compartido";
+                comida.innerText = "Comida: No incluida";
+                duracion.innerText = "Duración del Tour: Medio día";
+            } else if (presupuesto >= 150000 && presupuesto < 200000) {
+                destino.innerText = "Destino: Playa Lejana";
+                transporte.innerText = "Transporte: Transporte Privado";
+                comida.innerText = "Comida: Opcional";
+                duracion.innerText = "Duración del Tour: Día completo";
+            } else {
+                destino.innerText = "Destino: Tour Exclusivo";
+                transporte.innerText = "Transporte: Transporte VIP";
+                comida.innerText = "Comida: Incluida";
+                duracion.innerText = "Duración del Tour: Día completo";
+            }
+
+            opcionesTour.style.display = "block";
+        }
+    </script>
+</body>
+</html>
