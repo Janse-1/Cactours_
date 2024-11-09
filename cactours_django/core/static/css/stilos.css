@@ -1,14 +1,16 @@
+/* General */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    color: #333;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: #111;
+    color: #ffffff;
     margin: 0;
     padding: 0;
 }
 
+/* Banner */
 .banner {
-    background-color: #4CAF50;
-    color: #fff;
+    background-color: #156275;
+    color: #ffffff;
     padding: 20px 0;
     text-align: center;
 }
@@ -24,42 +26,39 @@ body {
 }
 
 .banner nav a {
-    color: #fff;
+    color: #ffffff;
     text-decoration: none;
     font-weight: bold;
 }
 
-h2 {
-    text-align: center;
-    margin: 20px 0;
-}
-
+/* Sección de tours */
 .tour-section {
     max-width: 1200px;
     margin: 20px auto;
     padding: 20px;
-    background: white;
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
 }
 
 h3 {
-    color: #007BFF;
+    color: #069be0;
     width: 100%;
+    text-align: center;
 }
 
 .tour {
     flex: 1 1 20%;
     margin: 10px;
-    border: 1px solid #4CAF50;
+    border: 1px solid #03a9f4;
     border-radius: 8px;
     padding: 15px;
-    background-color: #e9ecef;
+    background-color: #156275;
     text-align: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 .tour img {
@@ -70,17 +69,19 @@ h3 {
 
 .tour h4 {
     margin: 6px 0;
+    color: #ffffff;
 }
 
 .tour p {
     margin: 6px 0;
+    color: #e0e0e0;
 }
 
 .tour button {
     padding: 10px 20px;
     border: none;
-    background-color: #4CAF50;
-    color: white;
+    background-color: #069be0;
+    color: #ffffff;
     font-weight: bold;
     border-radius: 5px;
     cursor: pointer;
@@ -88,111 +89,13 @@ h3 {
 }
 
 .tour button:hover {
-    background-color: #3e8e41;
+    background-color: #03a9f4;
 }
 
-.info-box {
-    background-color: #e9ecef;
-    border-left: 4px solid #4CAF50;
-    padding: 15px;
-    margin-top: 15px;
-}
-
+/* Footer */
 footer {
     text-align: center;
-    margin-top: 20px;
     padding: 20px 0;
-    background-color: #4CAF50;
+    background-color: #156275;
     color: white;
-}
-
-footer p {
-    margin: 0;
-}
-
-.payment-form {
-    width: 60%;
-    margin: 0 auto;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-}
-
-.payment-form label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
-}
-
-.payment-form input, .payment-form select, .payment-form textarea {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-}
-
-.payment-form button {
-    width: 100%;
-    padding: 10px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.payment-form button:hover {
-    background-color: #218838;
-}
-
-.custom-tour-form {
-    width: 50%;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-}
-
-.custom-tour-form label {
-    font-weight: bold;
-}
-
-.custom-tour-form input {
-    width: 80%;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-}
-
-.custom-tour-form button {
-    padding: 10px 20px;
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.custom-tour-form button:hover {
-    background-color: #0056b3;
-}
-
-#opciones-tour p {
-    font-weight: bold;
-    margin: 10px 0;
-}
-
-#opciones-tour {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    display: none;
 }

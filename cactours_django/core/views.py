@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User
 
 # Lista de usuarios y contraseñas predefinidos para el admin
 ADMIN_USERS = {
@@ -13,7 +14,30 @@ def index(request):
 
 # Vista para el login de cliente
 def login_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        
+        # Autenticar al usuario
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            # Si el usuario existe y es correcto, iniciar sesión
+            login(request, user)
+            
+            # Verificar si es un administrador
+            if user.is_staff:
+                # Si es administrador, redirigir al panel de administración
+                return redirect('/admin/')  # Cambia 'admin_dashboard' con la ruta de tu panel de admin
+            else:
+                # Si es un usuario normal, redirigir a la página principal
+                return redirect('index')  # Cambia 'index' con la ruta que desees para usuarios normales
+        else:
+            # Si las credenciales no son correctas, mostrar mensaje de error
+            return render(request, 'login.html', {'error': 'Credenciales inválidas'})
+    
     return render(request, 'login.html')
+
 
 # Vista para el registro de cliente
 def register(request):
@@ -31,20 +55,4 @@ def registro(request):
 def pagos(request):
     return render(request, 'pagos.html')
 
-# Vista para el login del administrador (verificación básica)
-def admin_login(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
 
-        # Verificar si el usuario y la contraseña son correctos
-        if ADMIN_USERS.get(username) == password:
-            return redirect('admin_dashboard')  # Redirigir al dashboard
-        else:
-            return HttpResponse("Usuario o contraseña incorrectos.", status=403)
-
-    return render(request, 'admin_login.html')
-
-# Vista para el dashboard del administrador
-def admin_dashboard(request):
-    return render(request, 'admin_dashboard.html')
