@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Reserva</title>
+</head>
+<body>
+    <h2>Formulario de Registro</h2>
+
+    <form method="POST">
+        <label for="identificacion">Identificación:</label>
+        <input type="text" name="identificacion" required>
+    
+        <label for="nombre">Nombre:</label>
+        <input type="text" name="nombre" required>
+    
+        <label for="correo">Correo:</label>
+        <input type="email" name="correo" required>
+    
+        <label for="telefono">Teléfono:</label>
+        <input type="text" name="telefono" required>
+    
+        <label for="tipo_tour">Tipo de Tour:</label>
+        <input type="text" name="tipo_tour" value="{{ tipo_tour }}" readonly>
+    
+        <label for="costo">Costo:</label>
+        <input type="number" name="costo" value="{{ costo }}" readonly>
+    
+        <label for="opciones_escogidas">Opciones Escogidas:</label>
+        <input type="text" name="opciones_escogidas" value="{{ opciones|join(', ') }}" readonly>
+    
+        <label for="destino">Destino:</label>
+        <input type="text" name="destino" required>
+    
+        <label for="personas">Personas:</label>
+        <input type="number" name="personas" required>
+    
+        <label for="comentarios">Comentarios:</label>
+        <textarea name="comentarios"></textarea>
+    
+        <input type="submit" value="Reservar">
+    </form>
+    
+</body>
+</html>
+

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cactours - Inicio</title>
+    
+</head>
+<body>
+    <header>
+        <nav>
+        <a href="/contactanos.html">About us</a>
+        <a href="#">Oferts</a>
+        </nav>
+    </header>
+    <h2>La mejor agencia de turismos de la Guajira</h2>
+    <div>
+        <h4>Ya tienes reserva? No?</h4>
+        <a href="{% url 'reservas' %}">Ir a Reservas</a>
+        <a href="{% url 'pagos' %}">has tus pagos aqui</a>
+        <a href="{% url 'admin_login' %}"> Administrador</a>
+        <a href="{% url 'login' %}"> inicia sesion   </a>
+    </div>
+    
+</body>
+</html>
