@@ -3,10 +3,14 @@
 
 {% block title %}Inicio - Cactours{% endblock %}
 
-{% block content %}
+{%block nav%}
+<link rel="icon" href="{% static 'images/Icono.ico' %}" type="image/x-icon">
 <section class="showcase">
     <header>
+        <div class="logo-container">
+        <img src="{% static 'images\Icono.ico' %}" alt="Logo de Cactours" class="logo-image">   
         <h2 class="logo">Cactours</h2>
+        </div>
         <h4 class="slogan">Tu presupuesto, Nuestra inspiración</h4>
         <nav>
             <ul>
@@ -17,7 +21,8 @@
             </ul>
         </nav>
     </header>
-    
+{%endblock%}
+    {% block content %}
     <video src="{% static 'images\video/video4.mp4' %}" muted loop autoplay></video>
     
     <div class="overlay"> </div>

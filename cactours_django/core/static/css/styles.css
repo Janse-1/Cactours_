@@ -17,6 +17,17 @@ header {
     align-items: center;
 }
 
+.logo-container{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    
+}
+.logo-image{
+    width: 60px;
+    height: 60px;
+}
+
 header .logo {
     font-style: italic;
     font-size: 1.8em;
@@ -188,4 +199,77 @@ footer p {
         font-size: 1em;
     }
 }
+
+
+/*De aqui el diseño del login*/
+
+.login-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.7); /* Fondo semitransparente */
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    color: #ffffff;
+}
+
+.login-container h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+}
+
+.cta-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #1e90ff;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.cta-button:hover {
+    background-color: #4682b4;
+}
+
+.links {
+    margin-top: 15px;
+}
+
+.links a {
+    color: #1e90ff;
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+.links a:hover {
+    text-decoration: underline;
+}
+
+.error-message {
+    color: #ff4d4d;
+    margin-bottom: 10px;
+}
+
  
