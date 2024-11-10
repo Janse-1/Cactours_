@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Cactours{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    {% block content %}
+    <header>
+        <div class="logo-container">
+            <img src="{% static 'images/logo.png' %}" alt="Logo de Cactours" class="logo-image">
+            <h2 class="logo">Cactours</h2>
+        </div>
+        <h4 class="slogan">tu presupuesto, nuestra inspiración</h4>
+        <nav>
+            <ul>
+                <li><a href="{% url 'index' %}">Inicio</a></li>
+                <li><a href="{% url 'reservas' %}">Reservas</a></li>
+                <li><a href="{% url 'login' %}">Iniciar Sesión</a></li>
+                <li><a href="#footer">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+
+    <section class="showcase">
+        <video src="{% static 'images\video/video4.mp4' %}" muted loop autoplay></video>
+        <div class="overlay-video"></div>
+        <div class="overlay"></div>
+        <div class="text">
+            <h2>La mejor agencia de turismo de la Guajira</h2>
+            <h3>Descubre experiencias inolvidables</h3>
+            <p>Somos una agencia de viajes que ofrece los mejores servicios turísticos para superar tus expectativas y darte a conocer las maravillas de La Guajira.</p>
+            <a href="{% url 'reservas' %}">Explorar</a>
+        </div>
+    </section>
+
+    {% endblock %}
+
+     {%block footer%}    
+
+    <footer id="contacto">
+        <div class="contact-info">
+            <p><strong>Contacto:</strong></p>
+            <p>Email: info@cactours.com</p>
+            <p>Dirección: La Guajira, Colombia</p>
+            <div class="social">
+                <a href="#"><img src="https://i.ibb.co/x7P24fL/facebook.png" alt="Facebook"></a>
+                <a href="#"><img src="https://i.ibb.co/Wnxq2Nq/twitter.png" alt="Twitter"></a>
+                <a href="#"><img src="https://i.ibb.co/ySwtH4B/instagram.png" alt="Instagram"></a>
+            </div>
+        </div>
+        <p>&copy; 2024 Cactours. Todos los derechos reservados.</p>
+    </footer>
+    {% endblock%}
+</body>
+</html>
