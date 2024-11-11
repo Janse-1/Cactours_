@@ -76,15 +76,15 @@ WSGI_APPLICATION = 'cactours_django.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',  
         'NAME': 'cactours_db',
         'USER': 'root',
-        'PASSWORD': '',
-        'HOST': 'localhost',  
-        'PORT': '3306', 
-
+        'PASSWORD': '1234',  
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
+
 
 
 # Password validation

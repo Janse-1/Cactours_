@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Usuario{% endblock %}
+
+{% block nav_link %}
+    <li><a href="{% url 'index' %}">Inicio</a></li>
+    <li><a href="{% url 'usuario' %}">Mis Reservas</a></li>
+    <li class="dropdown">
+        <a href="#" class="dropdown-toggle">{{ user.username }}</a>
+        <div class="dropdown-menu">
+            <a href="#">Mi Perfil</a>
+            <a href="#">Cerrar Sesión</a>
+        </div>
+    </li>
+{% endblock %}
+
+
+{% block content %}
+    <link rel="stylesheet" href="{% static 'css/usuario.css' %}">
+    <section class="usuario-section">
+        <h2>Mis Reservas</h2>
+        <table class="reservas-table">
+            <thead>
+            <tr>
+                <th>Nombre del Tour</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reserva in reservas %}
+            <tr>
+                <td>{{ reserva.nombre_tour }}</td>
+                <td>{{ reserva.fecha }}</td>
+                <td>{{ reserva.estado }}</td>
+                <td>
+                    <button>Ver Detalles</button>
+                    <button>Aplicar Descuento</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+        </table>
+    </section>
+{% endblock %}
+
