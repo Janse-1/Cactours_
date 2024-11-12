@@ -1,47 +1,101 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Reserva</title>
-</head>
-<body>
-    <h2>Formulario de Registro</h2>
+{% extends 'base.html' %}
+{% load static %}
 
-    <form method="POST">
-        <label for="identificacion">Identificación:</label>
-        <input type="text" name="identificacion" required>
+{% block content %}
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #056b7c;
+    }
+
+    .register-container {
+        max-width: 400px;
+        padding: 60px;
+        background-color: rgba(0, 0, 0, 0.8);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        text-align: center;
+        color: white;
+    }
+
+    .messages {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .message {
+        padding: 10px;
+        margin: 5px 0;
+        background-color: #f8d7da; /* Rojo claro */
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+        border-radius: 5px;
+    }
+
+    .message.success {
+        background-color: #d4edda; /* Verde claro */
+        color: #155724;
+        border-color: #c3e6cb;
+    }
+</style>
+
+<div class="register-container">
+    <h2>Registro de Usuario</h2>
+
+    <!-- Mostrar mensajes de error y éxito -->
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
     
-        <label for="nombre">Nombre:</label>
-        <input type="text" name="nombre" required>
-    
-        <label for="correo">Correo:</label>
-        <input type="email" name="correo" required>
-    
-        <label for="telefono">Teléfono:</label>
-        <input type="text" name="telefono" required>
-    
-        <label for="tipo_tour">Tipo de Tour:</label>
-        <input type="text" name="tipo_tour" value="{{ tipo_tour }}" readonly>
-    
-        <label for="costo">Costo:</label>
-        <input type="number" name="costo" value="{{ costo }}" readonly>
-    
-        <label for="opciones_escogidas">Opciones Escogidas:</label>
-        <input type="text" name="opciones_escogidas" value="{{ opciones|join(', ') }}" readonly>
-    
-        <label for="destino">Destino:</label>
-        <input type="text" name="destino" required>
-    
-        <label for="personas">Personas:</label>
-        <input type="number" name="personas" required>
-    
-        <label for="comentarios">Comentarios:</label>
-        <textarea name="comentarios"></textarea>
-    
-        <input type="submit" value="Reservar">
+    <form method="POST" class="login-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="apellido">Apellido:</label>
+            <input type="text" id="apellido" name="apellido" required>
+        </div>
+
+        <div class="form-group">
+            <label for="identificacion">Identificación:</label>
+            <input type="text" id="identificacion" name="identificacion" required>
+        </div>
+
+        <div class="form-group">
+            <label for="correo">Correo:</label>
+            <input type="email" id="correo" name="correo" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="telefono">Teléfono:</label>
+            <input type="text" id="telefono" name="telefono" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Contraseña:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        
+        
+        <button type="submit" class="cta-button">Registrarse</button>
     </form>
     
-</body>
-</html>
+    <div class="links">
+        <a href="{% url 'login' %}">¿Ya tienes cuenta? Inicia sesión aquí</a>
+    </div>
+</div>
+{% endblock %}
 
+{% block footer%}
+{% endblock %}

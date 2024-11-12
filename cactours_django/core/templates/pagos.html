@@ -1,68 +1,173 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario de Registro</title>
-    
-</head>
-<body>
-    <div class="banner">
-        <nav>
-            <ul>
-                <li><a href="/">Inicio</a></li>
-                <li><a href="/reservas.html">Reservas</a></li>
-                <li><a href="/registro.html">Registro</a></li>
-                <li><a href="/contactanos.html">Contacto</a></li>
-            </ul>
-        </nav>
-    </div>
+{% extends 'base.html' %}
+{% load static %}
 
-    <h2>Formulario de Registro</h2>
+{% block content %}
+<style>
+    html, body {
+        height: 150%;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #056b7c;
+    }
 
-    <form action="/register_user" method="POST" class="register-form">
-        <label for="id">Identificación:</label>
-        <input type="text" id="id" name="id" required>
+    .payment-container {
+        max-width: 500px;
+        padding: 90px;
+        background-color: rgba(0, 0, 0, 0.8);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        text-align: center;
+        color: white;
+    }
 
-        <label for="name">Nombre Completo:</label>
-        <input type="text" id="name" name="name" required>
+    .form-group {
+        margin-bottom: 20px;
+        text-align: left;
+    }
 
-        <label for="email">Correo Electrónico:</label>
-        <input type="email" id="email" name="email" required>
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: white;
+    }
 
-        <label for="phone">Teléfono Celular:</label>
-        <input type="tel" id="phone" name="phone" required>
+    .form-group input, 
+    .form-group select, 
+    .form-group textarea {
+        width: 120%;
+        padding: 5px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
 
-        <label for="tour">Tour Seleccionado:</label>
-        <select id="tour" name="tour" required>
-            <option value="Tour Playa">Tour a la Playa</option>
-            <option value="Tour Gastronomico">Tour Gastronómico</option>
-            <option value="Tour Cultural">Tour Cultural</option>
-            <option value="Tour Departamental">Tour Departamental</option>
-            <option value="Tour Personalizado">Tour Personalizado</option>
-        </select>
+    .cta-button {
+        padding: 10px 20px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
 
-        <label for="comments">Comentarios o Preferencias Especiales:</label>
-        <textarea id="comments" name="comments" rows="4"></textarea>
+    .cta-button:hover {
+        background-color: #218838;
+    }
+</style>
 
-        <button type="submit">Registrarse</button>
+<div class="payment-container">
+    <h2>Formulario de Pago</h2>
+
+    <form method="POST" action="/confirmar_pago/" class="payment-form">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="tour">Tour Seleccionado:</label>
+            <select id="tour" name="tour" required onchange="actualizarPrecio()">
+                <option value="playa">Tour a la Playa</option>
+                <option value="gastronomico">Tour Gastronómico</option>
+                <option value="cultural">Tour Cultural</option>
+                <option value="departamental">Tour Departamental</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="num_personas">Número de Personas:</label>
+            <input type="number" id="num_personas" name="num_personas" min="1" required onchange="actualizarPrecio()">
+        </div>
+
+        <div class="form-group">
+            <label for="precio_total">Precio Total:</label>
+            <p id="precio_total">$0</p>
+        </div>
+
+        <div class="form-group">
+            <label for="fecha">Fecha del Tour:</label>
+            <input type="date" id="fecha" name="fecha" required>
+        </div>
+
+        <div class="form-group">
+            <label for="hora">Hora de inicio:</label>
+            <input type="time" id="hora" name="hora" required>
+        </div>
+
+        <div class="form-group">
+            <label for="banco">Medio de Pago:</label>
+            <select id="banco" name="banco" required>
+                <option value="Banco1">Banco Popular</option>
+                <option value="Banco2">Bancolombia</option>
+                <option value="Banco3">Davivienda</option>
+                <option value="Banco4">BBVA</option>
+                <option value="Banco5">Nequi</option>
+                <option value="Banco6">Otro</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="comments">Comentarios o Preferencias Especiales:</label>
+            <textarea id="comments" name="comments" rows="4"></textarea>
+        </div>
+
+        <button type="button" class="cta-button" onclick="redirigirPago()">Confirmar Pago</button>
     </form>
 
-    <footer>
-        <p>© 2024 Cactours</p>
-    </footer>
-
-    <!-- Script para preseleccionar el tour automáticamente según la URL -->
+    <!-- Script para calcular el precio dinámico -->
     <script>
-        // Obtener el parámetro 'tour' de la URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const tourSeleccionado = urlParams.get('tour');
+        // Precios base por tipo de tour
+        const preciosBase = {
+            playa: 150000,
+            gastronomico: 180000,
+            cultural: 180000,
+            departamental: 250000
+        };
 
-        // Preseleccionar el tour en el formulario
-        if (tourSeleccionado) {
-            document.getElementById('tour').value = tourSeleccionado;
+        // Función para actualizar el precio total
+        function actualizarPrecio() {
+            const tourSeleccionado = document.getElementById('tour').value;
+            const numPersonas = document.getElementById('num_personas').value || 1;
+            
+            // Calcular precio total
+            const precioBase = preciosBase[tourSeleccionado];
+            const precioTotal = precioBase * numPersonas;
+
+            // Mostrar precio total
+            document.getElementById('precio_total').textContent = $${precioTotal.toLocaleString()};
+        }
+
+         // Función para redirigir al usuario al banco seleccionado
+         function redirigirPago() {
+            const bancoSeleccionado = document.getElementById('banco').value;
+            let urlBanco;
+
+            switch (bancoSeleccionado) {
+                case 'Banco1':
+                    urlBanco = "https://www.bancopopular.com.co";  // URL del Banco Popular
+                    break;
+                case 'Banco2':
+                    urlBanco = "https://www.bancolombia.com";  // URL de Bancolombia
+                    break;
+                case 'Banco3':
+                    urlBanco = "https://www.davivienda.com";  // URL de Davivienda
+                    break;
+                case 'Banco4':
+                    urlBanco = "https://www.bbva.com.co";  // URL de BBVA
+                    break;
+                case 'Banco5':
+                    urlBanco = "https://www.nequi.com.co";  // URL de Nequi
+                    break;
+                case 'Banco6':
+                    urlBanco = "https://www.otro-banco.com";  // URL de Otro banco
+                    break;
+                default:
+                    alert("Por favor, selecciona un banco.");
+                    return;
+            }
+
+            // Redirigir al banco seleccionado
+            window.location.href = urlBanco;
         }
     </script>
-</body>
-</html>
+</div>
 
+{% endblock %}
