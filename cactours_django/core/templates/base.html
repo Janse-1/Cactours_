@@ -21,7 +21,7 @@
             <ul>
                 {%block nav_link%}
                 <li><a href="{% url 'index' %}">Inicio</a></li>
-                {% if request.path != '/login/' and request.path != '/registro/' %}
+                {% if request.path != '/login/' and request.path != '/registro/' and request.path != '/en-desarrollo/' %}
                 <li><a href="{% url 'login' %}">Iniciar Sesión</a></li>
                 {% endif %}
                 <li><a href="#footer">Contacto</a></li>

@@ -1,4 +1,6 @@
 from django.db import models
+from django.db import models
+from django.contrib.auth.models import User
 
 class TablaMaestra(models.Model):
     categoria = models.CharField(max_length=50)
@@ -9,6 +11,7 @@ class TablaMaestra(models.Model):
         return self.valor
 
 class Persona(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)   
     nombre = models.CharField(max_length=50)
     apellido = models.CharField(max_length=50)
     identificacion = models.CharField(max_length=50, unique=True)
@@ -28,12 +31,20 @@ class Empleado(models.Model):
     cargo = models.CharField(max_length=50)
     salario = models.DecimalField(max_digits=10, decimal_places=2)
     estado = models.ForeignKey(TablaMaestra, on_delete=models.CASCADE, related_name='empleados')
+    
+class Opcion(models.Model):
+    nombre_op = models.CharField(max_length=50)
+    descripcion = models.TextField()
+    precio_adic = models.DecimalField(max_digits=10, decimal_places=2)
 
 class Tour(models.Model):
     nombre_tour = models.CharField(max_length=50)
     descripcion = models.TextField()
     costo = models.DecimalField(max_digits=10, decimal_places=2)
     estado = models.ForeignKey(TablaMaestra, on_delete=models.CASCADE, related_name='tours')
+    opciones = models.ManyToManyField(Opcion)  
+
+
 
 class Reserva(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
@@ -46,13 +57,29 @@ class Reserva(models.Model):
     cant_personas = models.IntegerField()
     comentarios = models.TextField()
 
-class Opcion(models.Model):
-    nombre_op = models.CharField(max_length=50)
-    descripcion = models.TextField()
-    precio_adic = models.DecimalField(max_digits=10, decimal_places=2)
+
 
 class ToursOpc(models.Model):
-    tour = models.ForeignKey(Tour, on_delete=models.CASCADE)
     opcion = models.ForeignKey(Opcion, on_delete=models.CASCADE)
     class Meta:
-        unique_together = ('tour', 'opcion')
+        pass
+    
+
+class Viaje(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Relación con User
+    salida = models.CharField(max_length=100)
+    destino = models.CharField(max_length=100)
+    fecha = models.DateField()
+    
+
+class ReservaUsuario(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Relación con User
+    fecha = models.DateField()
+    tipo_tour = models.CharField(max_length=100)
+    medio_pago = models.CharField(max_length=50)
+    costo = models.DecimalField(max_digits=10, decimal_places=2)
+    adiciones = models.TextField()
+    comentarios = models.TextField()
+    
+
+

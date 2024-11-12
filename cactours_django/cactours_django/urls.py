@@ -22,7 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')),  # Incluye las urls de la app core
     path('reservas/', views.reservas, name='reservas'),
-    path('admin/', admin.site.urls),
+
     
 ]
 

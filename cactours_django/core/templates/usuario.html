@@ -17,12 +17,12 @@
         </div>
         <nav>
             <ul>
-                <li><a href="#">Ofertas</a></li>
-                <li><a href="#">Reservas</a></li>
+                <li><a href="{% url 'en_desarrollo' %}">Ofertas</a></li>
+                <li><a href="{% url 'reservas' %}">Reservas</a></li>
                 <li class="user-menu">
                     <a href="#">{{ user.username }}</a>
                     <div class="user-menu-content">
-                        <a href="#">Editar perfil</a>
+                        <a href="{% url 'en_desarrollo' %}">Editar perfil</a>
                         <a href="{% url 'index' %}">Cerrar sesión</a>
                     </div>
                 </li>
@@ -33,19 +33,22 @@
     <main class="main-content">
        
         <div class="table-container">
-            <h3>Mis viajes</h3>
+             <h3>Mis viajes</h3>
             <table>
                 <tr>
                     <th>Salida</th>
                     <th>Destino</th>
                     <th>Fecha</th>
                 </tr>
-                
+                {% for viaje in mis_viajes %}
                 <tr>
-                    <td>Riohacha - La Guajira</td>
-                    <td>Magdalena - Santa Marta</td>
-                    <td>2024-11-15</td>
+                    <td>{{ viaje.salida }}</td>
+                    <td>{{ viaje.destino }}</td>
+                    <td>{{ viaje.fecha }}</td>
                 </tr>
+                {% empty %}
+                <tr><td colspan="3">No tienes viajes registrados.</td></tr>
+                {% endfor %}
             </table>
 
             <h3>Mis reservas</h3>
@@ -58,26 +61,26 @@
                     <th>Adiciones</th>
                     <th>Comentarios</th>
                 </tr>
-               
+                {% for reserva in mis_reservas %}
                 <tr>
-                    <td>2024-11-01</td>
-                    <td>Tour Predterminado - Playa</td>
-                    <td>Tarjeta de crédito</td>
-                    <td>$1500000</td>
-                    <td>Transporte
-                        Hospedaje
-                    </td>
-                    <td>Pareja de novios</td>
+                    <td>{{ reserva.fecha }}</td>
+                    <td>{{ reserva.tipo_tour }}</td>
+                    <td>{{ reserva.medio_pago }}</td>
+                    <td>{{ reserva.costo }}</td>
+                    <td>{{ reserva.adiciones }}</td>
+                    <td>{{ reserva.comentarios }}</td>
                 </tr>
+                {% empty %}
+                <tr><td colspan="6">No tienes reservas registradas.</td></tr>
+                {% endfor %}
             </table>
+
         </div>
 
         
         <aside class="promotions">
             <h3>Promociones</h3>
-            <div class="promotion-item">
-                <p>20% de descuento en tu próximo tour.</p>
-            </div>
+            
             <div class="promotion-item">
                 <p>Reserva con amigos y obtén beneficios adicionales.</p>
             </div>

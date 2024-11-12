@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.contrib import messages
+from .models import Viaje, ReservaUsuario, Persona
 
 # Vista principal
 def index(request):
@@ -31,15 +32,30 @@ def login_view(request):
     return render(request, 'login.html')
 
 
-
-# Vista para el  cliente
+# Vista para el cliente
 def usuario(request):
-    return render(request, 'usuario.html')
+    usuario_actual = request.user  # El usuario autenticado
+    
+    # Obtener los viajes del usuario autenticado
+    mis_viajes = Viaje.objects.filter(user=usuario_actual)
+    
+    # Obtener las reservas del usuario autenticado
+    mis_reservas = ReservaUsuario.objects.filter(user=usuario_actual)
+
+    # Contexto para pasar a la plantilla
+    context = {
+        'mis_viajes': mis_viajes,
+        'mis_reservas': mis_reservas,
+    }
+    return render(request, 'usuario.html', context)
+
+
 
 # Vista para las reservas
 def reservas(request):
     return render(request, 'reservas.html')
 
+# Vista de registro
 # Vista de registro
 def registro(request):
     if request.method == 'POST':
@@ -77,9 +93,9 @@ def registro(request):
             user.is_staff = True  # Hacer al usuario administrador
             user.save()
 
-        # Crear una entrada en la tabla de Persona si la tienes
-        # persona = Persona(user=user, telefono=telefono, identificacion=identificacion, tipo=tipo_usuario)
-        # persona.save()
+        # Crear una entrada en la tabla de Persona
+        persona = Persona(user=user, nombre=nombre, apellido=apellido, telefono=telefono, identificacion=identificacion, correo=correo)
+        persona.save()
 
         messages.success(request, "Te has registrado correctamente.")
         return redirect('login')
@@ -87,6 +103,12 @@ def registro(request):
     return render(request, 'registro.html')
 
 
+
 # Vista para el pago
 def pagos(request):
     return render(request, 'pagos.html')
+
+
+# Vista para la página de desarrollo
+def en_desarrollo(request):
+    return render(request, 'en_desarrollo.html')
