@@ -1,8 +1,8 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .models import Viaje, ReservaUsuario, Persona
+from .models import Viaje, ReservaUsuario, Persona, Reserva, Tour
 
 # Vista principal
 def index(request):
@@ -106,9 +106,29 @@ def registro(request):
 
 # Vista para el pago
 def pagos(request):
+
     return render(request, 'pagos.html')
 
 
 # Vista para la página de desarrollo
 def en_desarrollo(request):
     return render(request, 'en_desarrollo.html')
+
+def login_views(request):
+    return render(request, 'login.html')
+
+def password_reset(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        
+        # Verificar si el correo existe en la base de datos
+        if User.objects.filter(email=email).exists():
+            # Lógica para enviar el enlace de restablecimiento (agrega la funcionalidad aquí)
+            message = "Correo enviado"
+        else:
+            message = "El correo ingresado no está registrado"
+        
+        # Pasar el mensaje al contexto para mostrar en la plantilla
+        return render(request, "password_reset.html", {"message": message})
+    
+    return render(request, 'password_reset.html')
