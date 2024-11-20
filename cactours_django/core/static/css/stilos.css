@@ -88,11 +88,7 @@ h3 {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
-.tour img {
-    width: 80%;
-    height: auto;
-    border-radius: 8px;
-}
+
 
 .tour h4 {
     margin: 6px 0;
@@ -148,11 +144,18 @@ footer {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
-.tour img {
-    width: 80%;
-    height: auto;
-    border-radius: 8px;
+
+.tour-images img {
+    width: 100%; 
+    height: auto; 
+    max-width: 300px; 
+    margin: 10px 0; 
+    object-fit: cover; 
+    display: flex;
+    flex-wrap: wrap; /* Para que las imágenes se ajusten y no desborden */
+    justify-content: center
 }
+
 
 .tour h4 {
     margin: 6px 0;

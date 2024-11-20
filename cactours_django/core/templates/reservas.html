@@ -58,18 +58,18 @@
     <div class="tour-container">
         {% for tour in tours %}
             <div class="tour">
-                <h4>{{ tour.nombre }}</h4>
+                <h4>{{ tour.nombre_tour }}</h4>
                 <p>{{ tour.descripcion }}</p>
 
                 <!-- Galería de imágenes del tour -->
                 <div class="tour-images">
                     {% for image in tour.imagenes.all %}
-                        <img src="{{ image.url }}" alt="{{ tour.nombre }}">
+                        <img src="{{ image.imagen.url }}" alt="{{ tour.nombre_tour }}">
                     {% endfor %}
                 </div>
+                
 
-                <p><strong>Precio:</strong> ${{ tour.precio }}</p>
-                <p><strong>Fecha:</strong> {{ tour.fecha_inicio|date:"d/m/Y" }}</p>
+                <p><strong>Precio:</strong> ${{ tour.costo }}</p>
 
                 <button onclick="window.location.href='{% url 'pagos' tour.id %}'">Reservar</button>
 

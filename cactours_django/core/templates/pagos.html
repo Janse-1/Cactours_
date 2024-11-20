@@ -3,17 +3,34 @@
 
 {% block content %}
 <style>
-    .payment-container {
+    .container {
         width: 100%;
         max-width: 1200px;
-        margin: 0 auto;
+        margin: 20px auto;
         padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .payment-container {
+        background-color: #156275;
+        color: #fff;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #fff;
     }
 
     .payment-form {
         display: flex;
         flex-direction: column;
-        gap: 15px;
+        gap: 20px;
     }
 
     .form-group {
@@ -45,13 +62,17 @@
     }
 
     .cta-button {
-        padding: 10px 20px;
+        padding: 12px 25px;
         background-color: #4CAF50;
         color: white;
         border: none;
         cursor: pointer;
         font-size: 16px;
         margin-top: 20px;
+        width: 100%;
+        max-width: 300px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .cta-button:hover {
@@ -62,6 +83,11 @@
         font-size: 1.2em;
         font-weight: bold;
         color: #333;
+    }
+
+    /* Para el espacio debajo del nav y general */
+    body {
+        padding-top: 80px; /* Ajuste para no tapar el contenido con el navbar */
     }
 </style>
 

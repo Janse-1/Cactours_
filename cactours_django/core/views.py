@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .models import Viaje, ReservaUsuario, Persona, Reserva, Tour
+from .models import Viaje, ReservaUsuario, Persona, Reserva, Tour, Opcion
 
 # Vista principal
 def index(request):
@@ -110,9 +110,14 @@ def registro(request):
 
 # Vista para el pago
 def pagos(request, tour_id):
-    tour = get_object_or_404(Tour, id=tour_id)
-
-    return render(request, 'pagos.html', {'tour': tour})
+    tour = Tour.objects.get(id=tour_id)
+    opciones = Opcion.objects.all()  # Esto obtiene las opciones (hospedaje, comida, transporte)
+    
+    context = {
+        'tour': tour,
+        'opciones': opciones,
+    }
+    return render(request, 'pagos.html', context)
 
 def pagos_personalizados(request):
     
