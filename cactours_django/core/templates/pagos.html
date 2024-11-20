@@ -3,72 +3,65 @@
 
 {% block content %}
 <style>
-    html, body {
-        height: 150%;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        background-color: #056b7c;
+    .payment-container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
     }
 
-    .payment-container {
-        max-width: 500px;
-        padding: 30px;
-        background-color: rgba(0, 0, 0, 0.8);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        border-radius: 10px;
-        text-align: center;
-        color: white;
+    .payment-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
     }
 
     .form-group {
-        margin-bottom: 20px;
-        text-align: left;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
     }
 
     .form-group label {
-        display: block;
-        margin-bottom: 5px;
-        color: white;
+        width: 150px;
+        font-weight: bold;
     }
 
-    .form-group input, 
-    .form-group select, 
-    .form-group textarea {
+    .form-group input,
+    .form-group select {
         width: 100%;
-        padding: 10px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
+        max-width: 250px;
     }
 
-    .cta-button {
-        padding: 10px 20px;
-        background-color: #28a745;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        margin-top: 20px;
-    }
-
-    .cta-button:hover {
-        background-color: #218838;
+    .form-group input[type="checkbox"] {
+        width: auto;
     }
 
     .options-group {
         display: flex;
-        justify-content: space-between;
-        margin-top: 10px;
+        flex-wrap: wrap;
+        gap: 10px;
     }
 
-    .options-group label {
-        margin-right: 10px;
+    .cta-button {
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 20px;
     }
 
-    footer {
-        margin-top: auto;
+    .cta-button:hover {
+        background-color: #45a049;
+    }
+
+    .price-total p {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #333;
     }
 </style>
 
@@ -78,156 +71,86 @@
     <form method="POST" action="/pagos/" class="payment-form" id="payment-form">
         {% csrf_token %}
 
+        <!-- Datos Personales -->
+        <div class="form-group">
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" required>
+
+            <label for="apellido">Apellido:</label>
+            <input type="text" id="apellido" name="apellido" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Correo Electrónico:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="telefono">Teléfono:</label>
+            <input type="tel" id="telefono" name="telefono" required>
+        </div>
+
+        <!-- Tour Seleccionado -->
         <div class="form-group">
             <label for="tour">Tour Seleccionado:</label>
-            <select id="tour" name="tour" required onchange="actualizarPrecio()">
-                <option value="playa">Tour a la Playa</option>
-                <option value="gastronomico">Tour Gastronómico</option>
-                <option value="cultural">Tour Cultural</option>
-                <option value="departamental">Tour Departamental</option>
-                <option value="personalizado">Tour Personalizado</option>
+            <select id="tour" name="tour" required>
+                <option value="{{ tour.id }}" selected>{{ tour.nombre }}</option>
             </select>
         </div>
 
-        <div class="form-group">
-            <label for="num_personas">Número de Personas:</label>
-            <input type="number" id="num_personas" name="num_personas" min="1" required onchange="actualizarPrecio()">
+        <!-- Precio Base del Tour -->
+        <div class="form-group price-total">
+            <label for="precio_total">Precio del Tour:</label>
+            <p id="precio_total">${{ tour.precio|floatformat:2 }}</p>
         </div>
 
-        <div class="form-group" id="personalizado-precio-container" style="display:none;">
-            <label for="precio_personalizado">Precio del Tour Personalizado:</label>
-            <input type="number" id="precio_personalizado" name="precio_personalizado" min="1" step="any" placeholder="Ingrese precio" onchange="actualizarPrecio()">
-        </div>
-
-        <div class="form-group">
-            <label for="precio_total">Precio Total:</label>
-            <p id="precio_total">$0</p>
-        </div>
-
-        <div class="form-group">
-            <label for="fecha">Fecha del Tour:</label>
-            <input type="date" id="fecha" name="fecha" required>
-        </div>
-
-        <div class="form-group">
-            <label for="hora">Hora de inicio:</label>
-            <input type="time" id="hora" name="hora" required>
-        </div>
-
-        <div class="form-group">
-            <label for="banco">Medio de Pago:</label>
-            <select id="banco" name="banco" required>
-                <option value="Banco1">Banco Popular</option>
-                <option value="Banco2">Bancolombia</option>
-                <option value="Banco3">Davivienda</option>
-                <option value="Banco4">BBVA</option>
-                <option value="Banco5">Nequi</option>
-                <option value="Banco6">Otro</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="comments">Comentarios o Preferencias Especiales:</label>
-            <textarea id="comments" name="comments" rows="4"></textarea>
-        </div>
-
-        <!-- Opciones adicionales (Comida, Transporte, Hospedaje) -->
+        <!-- Opciones adicionales -->
         <div class="form-group options-group">
             <label>Opciones Adicionales:</label>
-            <div>
-                <input type="checkbox" id="comida" name="comida" value="comida">
-                <label for="comida">Comida</label>
-            </div>
-            <div>
-                <input type="checkbox" id="transporte" name="transporte" value="transporte">
-                <label for="transporte">Transporte</label>
-            </div>
-            <div>
-                <input type="checkbox" id="hospedaje" name="hospedaje" value="hospedaje">
-                <label for="hospedaje">Hospedaje</label>
-            </div>
+            {% for opcion in opciones %}
+                <div>
+                    <input type="checkbox" id="{{ opcion.nombre }}" name="opciones" value="{{ opcion.id }}" data-precio="{{ opcion.precio }}" onchange="actualizarPrecio()">
+                    <label for="{{ opcion.nombre }}">{{ opcion.nombre }} (+${{ opcion.precio|floatformat:2 }})</label>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Número de Personas -->
+        <div class="form-group">
+            <label for="num_personas">Número de Personas:</label>
+            <input type="number" id="num_personas" name="num_personas" min="1" required value="1" onchange="actualizarPrecio()">
+        </div>
+
+        <!-- Precio Total Calculado -->
+        <div class="form-group price-total">
+            <label for="precio_total_final">Precio Total:</label>
+            <p id="precio_total_final">${{ tour.precio|floatformat:2 }}</p>
         </div>
 
         <button type="submit" class="cta-button">Confirmar Pago</button>
 
     </form>
 
-    <!-- Script para calcular el precio dinámico -->
     <script>
-        const preciosBase = {
-            playa: 150000,
-            gastronomico: 180000,
-            cultural: 180000,
-            departamental: 250000
-        };
-
         function actualizarPrecio() {
-            const tourSeleccionado = document.getElementById('tour').value;
-            const numPersonas = document.getElementById('num_personas').value || 1;
+            let precioTotal = parseFloat("{{ tour.precio }}");
+            const numPersonas = document.getElementById('num_personas').value;
+            
+            // Sumar el precio de las opciones adicionales seleccionadas
+            const opcionesSeleccionadas = document.querySelectorAll('input[name="opciones"]:checked');
+            opcionesSeleccionadas.forEach(opcion => {
+                precioTotal += parseFloat(opcion.getAttribute('data-precio'));
+            });
 
-            if (tourSeleccionado === "personalizado") {
-                document.getElementById('personalizado-precio-container').style.display = "block";
-            } else {
-                document.getElementById('personalizado-precio-container').style.display = "none";
-            }
+            // Multiplicar por el número de personas
+            precioTotal *= numPersonas;
 
-            let precioBase = preciosBase[tourSeleccionado] || 0;
-
-            if (tourSeleccionado === "personalizado") {
-                precioBase = parseFloat(document.getElementById('precio_personalizado').value) || 0;
-            }
-
-            const precioTotal = precioBase * numPersonas;
-
-            document.getElementById('precio_total').textContent = `$${precioTotal.toLocaleString()}`;
-        }
-
-        // Redirigir al banco seleccionado
-        function redirigirPago() {
-            const bancoSeleccionado = document.getElementById('banco').value;
-            let urlBanco;
-
-            switch (bancoSeleccionado) {
-                case 'Banco1':
-                    urlBanco = "https://www.bancopopular.com.co";
-                    break;
-                case 'Banco2':
-                    urlBanco = "https://www.bancolombia.com";
-                    break;
-                case 'Banco3':
-                    urlBanco = "https://www.davivienda.com";
-                    break;
-                case 'Banco4':
-                    urlBanco = "https://www.bbva.com.co";
-                    break;
-                case 'Banco5':
-                    urlBanco = "https://www.nequi.com.co";
-                    break;
-                case 'Banco6':
-                    urlBanco = "https://www.otro-banco.com";
-                    break;
-                default:
-                    alert("Por favor, selecciona un banco.");
-                    return;
-            }
-
-            window.location.href = urlBanco;
+            // Actualizar el precio total mostrado
+            document.getElementById('precio_total_final').textContent = '$' + precioTotal.toFixed(2);
         }
 
         window.onload = function() {
-            const params = new URLSearchParams(window.location.search);
-            const presupuestoPersonalizado = params.get("presupuesto");
-        
-            if (presupuestoPersonalizado) {
-                document.getElementById('precio_personalizado').value = presupuestoPersonalizado;
-                document.getElementById('tour').value = 'personalizado';
-                document.getElementById('personalizado-precio-container').style.display = "block";
-                actualizarPrecio();
-            }
+            actualizarPrecio();  // Actualizar el precio al cargar la página
         };
     </script>
 </div>
-
-
 
 {% endblock %}

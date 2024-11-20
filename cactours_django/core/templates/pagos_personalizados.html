@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resumen de Pago</title>
+</head>
+<body>
+    <h3>Resumen de tu tour personalizado</h3>
+    
+    <p><strong>Destino:</strong> {{ destino }}</p>
+    <p><strong>Transporte:</strong> {{ transporte }}</p>
+    <p><strong>Comida:</strong> {{ comida }}</p>
+    <p><strong>Duración del Tour:</strong> {{ duracion }}</p>
+    <p><strong>Presupuesto:</strong> COP {{ presupuesto }}</p>
+    
+    <form action="{% url 'confirmar_pago' %}" method="POST">
+        {% csrf_token %}
+        <!-- Aquí puedes incluir los detalles para el pago -->
+        <button type="submit">Confirmar pago</button>
+    </form>
+</body>
+</html>

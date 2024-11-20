@@ -41,8 +41,22 @@ class Tour(models.Model):
     nombre_tour = models.CharField(max_length=50)
     descripcion = models.TextField()
     costo = models.DecimalField(max_digits=10, decimal_places=2)
-    estado = models.ForeignKey(TablaMaestra, on_delete=models.CASCADE, related_name='tours')
-    opciones = models.ManyToManyField(Opcion)  
+    estado = models.ForeignKey('TablaMaestra', on_delete=models.CASCADE, related_name='tours')
+    opciones = models.ManyToManyField('Opcion')
+    ciudad_destino = models.CharField(max_length=50)  # Nuevo campo para el destino
+    imagen = models.ImageField(upload_to='tours/', blank=True, null=True)  # Nuevo campo para la imagen
+
+    def __str__(self):
+        return self.nombre_tour
+    
+class ImagenTour(models.Model):
+    tour = models.ForeignKey(Tour, related_name='imagenes', on_delete=models.CASCADE)
+    imagen = models.ImageField(upload_to='tours/')
+    descripcion = models.CharField(max_length=100, blank=True, null=True)  # Descripción opcional
+
+    def __str__(self):
+        return self.descripcion or f"Imagen del tour {self.tour.nombre_tour}"
+
 
 
 

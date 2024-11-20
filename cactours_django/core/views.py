@@ -53,7 +53,11 @@ def usuario(request):
 
 # Vista para las reservas
 def reservas(request):
-    return render(request, 'reservas.html')
+    tours = Tour.objects.all()
+    if not tours.exists():
+        return render(request, 'reservas.html', {'error': 'No hay tours disponibles.'})
+    return render(request, 'reservas.html', {'tours': tours})
+
 
 # Vista de registro
 # Vista de registro
@@ -105,9 +109,14 @@ def registro(request):
 
 
 # Vista para el pago
-def pagos(request):
+def pagos(request, tour_id):
+    tour = get_object_or_404(Tour, id=tour_id)
 
-    return render(request, 'pagos.html')
+    return render(request, 'pagos.html', {'tour': tour})
+
+def pagos_personalizados(request):
+    
+    return render(request, 'pagos_personalizado.html')
 
 
 # Vista para la página de desarrollo

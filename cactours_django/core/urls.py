@@ -7,7 +7,8 @@ urlpatterns = [
     path('usuario/', views.usuario, name='usuario'),
     path('reservas/', views.reservas, name='reservas'),
     path('registro/', views.registro, name='registro'),
-    path('pagos/', views.pagos, name='pagos'),
+    path('pagos/<int:tour_id>/', views.pagos, name='pagos'),
+    path('pagos/personalizados/', views.pagos_personalizados, name='pagos_personalizados'),
     path('en-desarrollo/', views.en_desarrollo, name='en_desarrollo'),
     path('password_reset/', views.password_reset, name='password_reset'),
     
