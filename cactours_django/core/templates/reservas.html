@@ -60,24 +60,29 @@
             <div class="tour">
                 <h4>{{ tour.nombre_tour }}</h4>
                 <p>{{ tour.descripcion }}</p>
-
-                <!-- Galería de imágenes del tour -->
-                <div class="tour-images">
-                    {% for image in tour.imagenes.all %}
-                        <img src="{{ image.imagen.url }}" alt="{{ tour.nombre_tour }}">
-                    {% endfor %}
+    
+                <!-- Galería de imágenes del tour (Carrusel) -->
+                <div class="tour-carousel">
+                    <div class="carousel" data-index="0">
+                        {% for image in tour.imagenes.all %}
+                            <div class="carousel-item">
+                                <img src="{{ image.imagen.url }}" alt="{{ tour.nombre_tour }}">
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button class="prev" onclick="moveCarousel(this, -1)">Anterior</button>
+                    <button class="next" onclick="moveCarousel(this, 1)">Siguiente</button>
                 </div>
                 
-
+    
                 <p><strong>Precio:</strong> ${{ tour.costo }}</p>
-
                 <button onclick="window.location.href='{% url 'pagos' tour.id %}'">Reservar</button>
-
             </div>
         {% empty %}
             <p>No hay tours disponibles en este momento.</p>
         {% endfor %}
     </div>
+    
 </section>
 
 <footer>
@@ -115,6 +120,31 @@
         opcionesTour.style.display = "block";
     }
 </script>
+
+<script>
+    function moveCarousel(button, direction) {
+        // Encuentra el contenedor del carrusel asociado al botón
+        const carousel = button.parentElement.querySelector('.carousel');
+    
+        // Obtén el número total de elementos
+        const items = carousel.children.length;
+    
+        // Obtén el índice actual desde el atributo data-index
+        let currentIndex = parseInt(carousel.getAttribute('data-index')) || 0;
+    
+        // Calcula el nuevo índice
+        currentIndex = (currentIndex + direction + items) % items;
+    
+        // Actualiza la posición del carrusel
+        carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
+    
+        // Guarda el índice actualizado en el atributo data-index
+        carousel.setAttribute('data-index', currentIndex);
+    }
+    
+</script>
+
+
 
 </body>
 </html>

@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
+from django.utils.timezone import now
 from django.contrib.auth.models import User
 from django.contrib import messages
 from .models import Viaje, ReservaUsuario, Persona, Reserva, Tour, Opcion
@@ -110,14 +111,85 @@ def registro(request):
 
 # Vista para el pago
 def pagos(request, tour_id):
-    tour = Tour.objects.get(id=tour_id)
-    opciones = Opcion.objects.all()  # Esto obtiene las opciones (hospedaje, comida, transporte)
+    user = request.user
+    tour = get_object_or_404(Tour, id=tour_id)
+
+    try:
+        persona = Persona.objects.get(user=user)
+    except Persona.DoesNotExist:
+        persona = None  
+
+    opciones = Opcion.objects.all()
     
+    medios_pago = [
+        ('tarjeta', 'Tarjeta de Crédito'),
+        ('paypal', 'PayPal'),
+        ('transferencia', 'Transferencia Bancaria'),
+    ]
+    
+    if request.method == "POST":
+        # Obtener los datos del formulario
+        lugar_salida = request.POST.get('lugar_salida', None)
+        num_personas = request.POST.get('num_personas', None)
+        medio_pago = request.POST.get('medio_pago', None)
+        comentarios = request.POST.get('comentarios', None)
+
+        # Verificar si falta algún campo
+        if not lugar_salida or not num_personas or not medio_pago:
+            messages.error(request, "Por favor, completa todos los campos.")
+            return redirect('pagos', tour_id=tour_id)
+
+        # Convertir num_personas a un entero y calcular el costo total
+        try:
+            num_personas = int(num_personas)
+            costo_total = float(tour.costo) * num_personas
+        except ValueError:
+            messages.error(request, "Número de personas no válido.")
+            return redirect('pagos', tour_id=tour_id)
+
+        # Obtener la fecha y hora actuales
+        fecha_actual = now().date()
+        hora_actual = now().time()
+
+        # Guardar en la tabla Reserva
+        reserva = Reserva.objects.create(
+            cliente=user,
+            tour=tour,
+            costo_total=costo_total,
+            fecha=fecha_actual,  # Usar la fecha actual
+            hora=hora_actual,  # Usar la hora actual
+            medio_pago=medio_pago,
+            destino=lugar_salida,
+            cant_personas=num_personas,
+            comentarios=comentarios
+        )
+
+        # Guardar en la tabla ReservaUsuario
+        ReservaUsuario.objects.create(
+            user=user,
+            fecha=fecha_actual,
+            tipo_tour=tour.nombre_tour,
+            medio_pago=medio_pago,
+            costo=costo_total,
+            adiciones="",  # Si es necesario, agregar las adiciones
+            comentarios=comentarios
+        )
+
+        # Mensaje de éxito
+        messages.success(request, "¡Reserva realizada con éxito!")
+
+        # Redirigir a la página de usuario
+        return redirect('usuario')  # Aquí es donde se redirige al usuario
+
     context = {
+        'persona': persona,  
         'tour': tour,
         'opciones': opciones,
+        'medios_pago': medios_pago,
     }
     return render(request, 'pagos.html', context)
+
+
 
 def pagos_personalizados(request):
     

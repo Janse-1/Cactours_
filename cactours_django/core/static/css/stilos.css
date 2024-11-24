@@ -77,6 +77,66 @@ h3 {
     text-align: center;
 }
 
+/* Contenedor del carrusel */
+.tour-carousel {
+    position: relative;
+    width: 100%;
+    max-width: 300px;
+    overflow: hidden;
+    margin: auto;
+}
+
+/* Contenedor de las imágenes */
+.carousel {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+    will-change: transform;
+}
+
+/* Estilo de cada imagen */
+.carousel-item {
+    min-width: 100%;
+    box-sizing: border-box;
+}
+
+.carousel-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+}
+
+/* Botones del carrusel */
+.carousel-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.carousel-button.prev {
+    left: 10px;
+}
+
+.carousel-button.next {
+    right: 10px;
+}
+
+.carousel-button:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+
 .tour {
     flex: 1 1 20%;
     margin: 10px;
@@ -127,22 +187,22 @@ footer {
 
 /* Estilo para las tarjetas de tour */
 .tour-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Tres columnas */
+    gap: 20px; /* Espacio entre los elementos */
+    margin: 20px 0;
 }
 
+/* Estilo de cada tarjeta de tour */
 .tour {
-    flex: 1 1 20%;
-    margin: 10px;
-    border: 1px solid #03a9f4;
+    border: 1px solid #ccc;
     border-radius: 8px;
     padding: 15px;
     background-color: #156275;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
+
 
 
 .tour-images img {
@@ -188,4 +248,17 @@ footer {
     padding: 20px 0;
     background-color: #156275;
     color: white;
+}
+
+
+@media (max-width: 768px) {
+    .tour-container {
+        grid-template-columns: repeat(2, 1fr); /* Dos columnas en pantallas medianas */
+    }
+}
+
+@media (max-width: 480px) {
+    .tour-container {
+        grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
+    }
 }
