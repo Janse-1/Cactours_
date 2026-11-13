@@ -38,8 +38,7 @@ App móvil (futuro)
               └── Django REST Framework
 
 Base de datos
-  └── PostgreSQL (recomendado para nuevo despliegue)
-      o MySQL si el proyecto ya requiere continuidad con datos existentes
+  └── MySQL (motor principal del proyecto)
 ```
 
 ## 4. Arquitectura lógica
@@ -93,8 +92,8 @@ Base de datos relacional
 
 ### 5.4 Persistencia
 - Consolidar modelos y migraciones dentro de Django.
-- Para despliegue nuevo: priorizar PostgreSQL.
-- Si ya existe una base productiva en MySQL, mantenerla y migrar de forma controlada.
+- El motor principal del sistema será MySQL.
+- Mantener una configuración clara de conexión y variables de entorno para entorno local, desarrollo y producción.
 
 ### 5.5 Imágenes
 - Guardar metadatos e identificadores de las imágenes en la base de datos.
@@ -153,7 +152,6 @@ Cactours_
 │   └── TASK.md
 ├── cactours_django/
 │   ├── manage.py
-│   ├── db.sqlite3
 │   ├── cactours_django/
 │   │   ├── __init__.py
 │   │   ├── asgi.py
