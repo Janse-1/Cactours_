@@ -1,24 +1,9 @@
-"""Servicios y serialización del módulo de pagos (`apps.payments`)."""
+"""Servicios del módulo de pagos (`apps.payments`)."""
 from django.db import transaction
 from apps.bookings.models import Reserva
 from apps.common.http import DomainError
 from .models import EstadoTransaccion, TransaccionPago
-
-
-def serialize_transaccion(tx: TransaccionPago) -> dict:
-    return {
-        "id": tx.id,
-        "referencia_interna": tx.referencia_interna,
-        "reserva_id": tx.reserva_id,
-        "codigo_reserva": tx.reserva.codigo_reserva,
-        "monto": str(tx.monto),
-        "moneda": tx.moneda,
-        "proveedor": tx.proveedor,
-        "referencia_externa": tx.referencia_externa,
-        "estado": tx.estado,
-        "estado_display": tx.get_estado_display(),
-        "created_at": tx.created_at.isoformat(),
-    }
+from .serializers import serialize_transaccion
 
 
 class PaymentService:
