@@ -1,0 +1,128 @@
+/* =============================================================================
+ * CACTOURS DESIGN SYSTEM TOKENS (Basado en Libreto/DESIGN.md y DEC-007)
+ * ============================================================================= */
+
+:root {
+  /* Paleta oficial de marca */
+  --color-mineral-ivory: #F2EFE6;
+  --color-turquesa-cactours: #026374;
+  --color-azul-petroleo: #156275;
+  --color-azul-brillante: #069BE0;
+  --color-blanco: #FFFFFF;
+  --color-carbon: #111111;
+
+  /* Estados semánticos con contraste WCAG 2.2 AA */
+  --color-success-bg: #E6F4EA;
+  --color-success-text: #137333;
+  --color-error-bg: #FCE8E6;
+  --color-error-text: #C5221F;
+  --color-warning-bg: #FEF7E0;
+  --color-warning-text: #B06000;
+
+  /* Tipografías */
+  --font-heading: 'Manrope', system-ui, -apple-system, sans-serif;
+  --font-body: 'DM Sans', system-ui, -apple-system, sans-serif;
+  --font-editorial: 'Cormorant Garamond', Georgia, serif;
+
+  /* Radios y elevación */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --shadow-card: 0 10px 30px rgba(2, 99, 116, 0.08);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-mineral-ivory);
+  color: var(--color-carbon);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  color: var(--color-turquesa-cactours);
+  margin-top: 0;
+}
+
+.editorial-tagline {
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-size: 1.35rem;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-container {
+  flex: 1;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--color-turquesa-cactours);
+  color: var(--color-blanco);
+  font-family: var(--font-body);
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-azul-petroleo);
+}
+
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-azul-brillante);
+  color: var(--color-carbon);
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.surface-card {
+  background-color: var(--color-blanco);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 1.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

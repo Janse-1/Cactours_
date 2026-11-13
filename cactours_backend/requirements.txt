@@ -1,0 +1,2 @@
+# Por defecto en entorno local se instalan las dependencias de desarrollo (que incluyen base.txt)
+-r requirements/dev.txt

@@ -1,209 +1,121 @@
-# Cactours
+# Cactours — Plataforma Turística Multiplataforma (Backend Django + Web Vue.js + Móvil React Native)
 
-Plataforma web para descubrir tours y gestionar reservas. El proyecto utiliza Django para el backend y las páginas web, con MySQL como motor de base de datos.
+Plataforma escalable para descubrir experiencias turísticas en La Guajira y Colombia, cotizar planes según presupuesto y gestionar solicitudes de reserva desde Web y Móvil sobre una única fuente de verdad.
 
-> **Estado:** MVP en desarrollo. Algunas capacidades descritas en la arquitectura —como la API móvil, la autenticación móvil y los pagos en línea— todavía no están implementadas.
-
-## Contenido
-
-- [Descripción](#descripción)
-- [Tecnologías](#tecnologías)
-- [Estructura del repositorio](#estructura-del-repositorio)
-- [Requisitos](#requisitos)
-- [Configuración local](#configuración-local)
-- [Comandos habituales](#comandos-habituales)
-- [Rutas principales](#rutas-principales)
-- [Documentación](#documentación)
-- [Notas de seguridad y despliegue](#notas-de-seguridad-y-despliegue)
-
-## Descripción
-
-Cactours es una aplicación web para una agencia turística. La implementación actual contiene páginas Django para el catálogo y el flujo de reservas, junto con modelos para usuarios, personas, tours y reservas. La lógica del backend y las plantillas están en la aplicación Django `core`.
-
-El repositorio también conserva `APP.py` y `cactours.sql` en la raíz. El punto de entrada web de Django es `cactours_django/manage.py`.
-
-## Tecnologías
-
-- **Python y Django:** backend y renderizado de páginas.
-- **MySQL:** base de datos configurada para el proyecto.
-- **Django Templates:** interfaz web actual.
-- **HTML, CSS y JavaScript:** recursos de la interfaz.
-- **Vite:** compila los recursos web; sus dependencias se administran con npm y `package.json`.
-- **React Native + Expo:** opción prevista para una aplicación móvil futura, no incluida en el estado actual.
-
-## Estructura del repositorio
+## Arquitectura del Monorepo
 
 ```text
-Cactours_/
-├── README.md
-├── Libreto/                       # Documentación funcional y técnica
-│   ├── ARCHITECTURE.md
-│   ├── DECISION.md
-│   ├── DESIGN.md
-│   ├── MEMORY.md
-│   ├── PRD.md
-│   ├── RULES.md
-│   └── TASK.md
-└── cactours_django/               # Aplicación web Django
-    ├── manage.py
-    ├── requirements.txt
-    ├── package.json                # Herramientas del frontend
-    ├── package-lock.json
-    ├── vite.config.js
-    ├── cactours_django/           # Configuración del proyecto Django
-    │   ├── settings.py
-    │   ├── urls.py
-    │   ├── asgi.py
-    │   └── wsgi.py
-    ├── core/                      # Funcionalidad principal
-    │   ├── models.py
-    │   ├── views.py
-    │   ├── forms.py
-    │   ├── urls.py
-    │   ├── migrations/
-    │   ├── templates/
-    │   └── static/
-    ├── frontend/                  # Código fuente y salida de Vite
-    │   ├── src/
-    │   │   ├── main.js
-    │   │   └── styles.css
-    │   └── dist/                  # Salida generada (no se versiona)
-    ├── media/                     # Archivos multimedia subidos
-    └── tours/                     # Recursos de tours existentes
+Cactours/
+├── .gitignore                   # Reglas para excluir secretos (.env), entornos (.venv, node_modules) y artefactos
+├── .env.example                 # Variables de entorno de referencia global
+├── Libreto/                     # Documentación de arquitectura, decisiones, PRD, diseño y tareas
+├── cactours_backend/            # Backend API REST en Django 5 (antes cactours_django)
+│   ├── config/settings/         # Configuración modular por entorno: base.py, dev.py, prod.py
+│   ├── requirements/            # Dependencias por caso: base.txt, dev.txt, prod.txt
+│   ├── apps/
+│   │   ├── common/              # Modelos base, autenticación Bearer Token, CORS y respuestas JSON
+│   │   ├── accounts/            # Usuarios, Personas, Clientes, Empleados y AccountService
+│   │   ├── tours/               # Catálogo de Tours, Opciones, Galería y Recomendador por Presupuesto
+│   │   ├── bookings/            # Modelo canónico de Reservas, Cotizador y BookingService
+│   │   └── payments/            # Registro de Transacciones de Pago desacoplado de la reserva
+│   └── media/tours/             # Imágenes del catálogo de tours
+├── cactours_frontend/           # Aplicación Web SPA en Vue.js 3 + Vite + Pinia + Vue Router
+└── cactours_mobile/             # Aplicación Móvil en React Native + Expo (iOS y Android)
 ```
 
-## Requisitos
+---
 
-- Python compatible con Django 5.1 (se recomienda Python 3.12 o 3.13).
-- MySQL Server en ejecución.
-- Git.
-- Node.js 20.19+ o 22.12+ y npm para Vite.
+## 1. Configuración del Backend (`cactours_backend`)
 
-## Configuración local
+### 1.1 Activar entorno virtual e instalar dependencias según el caso
 
-Los siguientes comandos están escritos para PowerShell y se ejecutan desde la raíz del repositorio.
-
-### 1. Crear y activar un entorno virtual
+Desde la raíz del repositorio en PowerShell:
 
 ```powershell
-py -3.12 -m venv .venv
+# Crear entorno virtual si no existe
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
+
+# Instalar dependencias según el entorno:
+# Caso Desarrollo y Testing:
+pip install -r .\cactours_backend\requirements\dev.txt
+
+# Caso Base:
+pip install -r .\cactours_backend\requirements\base.txt
+
+# Caso Producción:
+pip install -r .\cactours_backend\requirements\prod.txt
 ```
 
-Si PowerShell impide activar el entorno, consulta la política de ejecución de tu equipo o activa el entorno desde una terminal compatible.
+### 1.2 Variables de entorno
 
-### 2. Instalar dependencias de Python
+Copia la plantilla `.env.example` a `.env` dentro de `cactours_backend/` (nunca se sube al repositorio):
 
 ```powershell
-python -m pip install --upgrade pip
-python -m pip install -r .\cactours_django\requirements.txt
+Copy-Item .\cactours_backend\.env.example .\cactours_backend\.env
 ```
 
-### 3. Instalar dependencias del frontend
+> En desarrollo local, si `DB_ENGINE=sqlite` (o si aún no has definido `DB_PASSWORD` para MySQL), el proyecto utiliza automáticamente SQLite para facilitar pruebas rápidas. Para usar MySQL, define `DB_ENGINE=mysql` y tus credenciales locales en `cactours_backend/.env`.
+
+### 1.3 Migraciones, pruebas y ejecución
 
 ```powershell
-Set-Location .\cactours_django
-npm ci
-Set-Location ..
-```
-
-### 4. Crear la base de datos MySQL
-
-En MySQL, crea una base de datos con el nombre configurado por el proyecto:
-
-```sql
-CREATE DATABASE cactours_db
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-```
-
-La conexión se define actualmente en `cactours_django/cactours_django/settings.py`. Antes de ejecutar la aplicación, configura ahí el host, el puerto, el usuario y la contraseña de tu instancia MySQL. Usa un usuario de base de datos dedicado y no publiques credenciales.
-
-### 5. Aplicar migraciones
-
-```powershell
-Set-Location .\cactours_django
-python manage.py migrate
-```
-
-### 6. Crear un usuario administrador
-
-```powershell
-python manage.py createsuperuser
-```
-
-### 7. Iniciar Django y Vite
-
-Abre dos terminales, activa el entorno virtual en ambas y ejecuta:
-
-**Terminal 1 — Django**
-
-```powershell
-Set-Location .\cactours_django
-python manage.py runserver
-```
-
-**Terminal 2 — Vite**
-
-```powershell
-Set-Location .\cactours_django
-npm run dev
-```
-
-Abre <http://127.0.0.1:8000/> en el navegador. El panel de administración está disponible en <http://127.0.0.1:8000/admin/>.
-
-En desarrollo, las plantillas que usan `base.html` reciben los recursos desde el servidor Vite con recarga en caliente. Las páginas independientes pueden seguir cargando sus archivos estáticos directamente desde Django.
-
-## Comandos habituales
-
-Ejecuta estos comandos desde `cactours_django/` con el entorno virtual activado:
-
-```powershell
-python manage.py check
+Set-Location .\cactours_backend
 python manage.py makemigrations
 python manage.py migrate
 python manage.py test
+python manage.py runserver
 ```
 
-Para recopilar los archivos estáticos en una preparación de despliegue:
+### 1.4 Endpoints principales de la API REST (`/api/v1/`)
+
+| Método | Endpoint | Descripción |
+| --- | --- | --- |
+| `GET` | `/api/v1/health/` | Estado del servicio y mapa de endpoints |
+| `POST` | `/api/v1/auth/register/` | Registro seguro de cliente y emisión de tokens |
+| `POST` | `/api/v1/auth/login/` | Inicio de sesión (retorna `access` y `refresh` token) |
+| `POST` | `/api/v1/auth/refresh/` | Renovación de token de acceso |
+| `GET / PATCH` | `/api/v1/auth/me/` | Perfil del usuario autenticado |
+| `GET` | `/api/v1/tours/` | Catálogo de tours publicados (filtros: `destino`, `q`, `presupuesto_max`) |
+| `GET` | `/api/v1/tours/<id>/` | Detalle de un tour con galería y opciones adicionales |
+| `POST` | `/api/v1/tours/recomendador/` | Recomendador de tours y adiciones según presupuesto en COP |
+| `POST` | `/api/v1/bookings/cotizar/` | Cálculo exacto de precio en servidor (base + opciones) |
+| `GET / POST` | `/api/v1/bookings/` | Historial del cliente y creación de solicitud de reserva |
+| `GET / PATCH` | `/api/v1/bookings/<id>/` | Detalle o cancelación de una solicitud de reserva |
+| `GET / POST` | `/api/v1/payments/` | Consulta y registro de intenciones de pago |
+
+---
+
+## 2. Configuración del Frontend Web en Vue.js (`cactours_frontend`)
 
 ```powershell
-Set-Location .\cactours_django
-npm run build
-python manage.py collectstatic
+Set-Location .\cactours_frontend
+Copy-Item .\.env.example .\.env
+npm install
+npm run dev
 ```
 
-En producción, configura `DEBUG = False` y ejecuta la compilación de Vite antes de `collectstatic`; Django-Vite lee el manifiesto generado en `frontend/dist/manifest.json`.
+La aplicación web estará disponible en `http://localhost:5173` conectada a `http://localhost:8000/api/v1`.
 
-## Rutas principales
+---
 
-| Ruta | Descripción |
-| --- | --- |
-| `/` | Página principal |
-| `/reservas/` | Consulta de tours y comienzo del flujo de reserva |
-| `/registro/` | Registro de usuario |
-| `/login/` | Inicio de sesión |
-| `/usuario/` | Página del usuario autenticado |
-| `/pagos/<tour_id>/` | Formulario asociado a un tour |
-| `/admin/` | Administración de Django |
+## 3. Configuración de la App Móvil en React Native (`cactours_mobile`)
 
-Las rutas pueden cambiar conforme evolucione el MVP. El cobro en línea no debe considerarse disponible solo por la existencia de una página de pago.
+```powershell
+Set-Location .\cactours_mobile
+Copy-Item .\.env.example .\.env
+npm install
+npx expo start
+```
 
-## Documentación
+---
 
-- [Arquitectura](Libreto/ARCHITECTURE.md): componentes, estructura objetivo y decisiones técnicas.
-- [Requisitos del producto](Libreto/PRD.md): alcance funcional.
-- [Diseño](Libreto/DESIGN.md): lineamientos de interfaz.
-- [Decisiones](Libreto/DECISION.md): decisiones y alternativas del proyecto.
-- [Tareas](Libreto/TASK.md): trabajo pendiente.
-- [Reglas](Libreto/RULES.md): convenciones y criterios de trabajo.
+## Documentación Técnica (`Libreto/`)
 
-## Notas de seguridad y despliegue
-
-- No despliegues con `DEBUG = True`.
-- No uses credenciales de administrador de MySQL para la aplicación.
-- Mantén la clave secreta y las credenciales fuera del control de versiones; la configuración actual debe migrarse a variables de entorno antes de un despliegue.
-- Configura `ALLOWED_HOSTS`, HTTPS, archivos estáticos y almacenamiento de medios para el entorno de producción.
-- Ejecuta y revisa las migraciones antes de desplegar cambios de modelos.
-- No uses `runserver` como servidor de producción.
-- Valida y prueba los flujos de autenticación y reservas antes de habilitarlos para usuarios reales.
+- [Arquitectura](Libreto/ARCHITECTURE.md)
+- [Decisiones Arquitectónicas](Libreto/DECISION.md)
+- [Sistema de Diseño UX/UI](Libreto/DESIGN.md)
+- [PRD — Requisitos del Producto](Libreto/PRD.md)
+- [Reglas de Desarrollo y Seguridad](Libreto/RULES.md)
+- [Memoria del Proyecto](Libreto/MEMORY.md)
+- [Hoja de Ruta y Tareas](Libreto/TASK.md)

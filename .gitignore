@@ -1,0 +1,117 @@
+# =============================================================================
+# CACTOURS MONOREPO - .gitignore
+# Evita subir claves secretas, datos sensibles, artefactos de compilación y entornos
+# =============================================================================
+
+# --- Variables de entorno y secretos (CRÍTICO: Nunca versionar) ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+secrets.json
+credentials.json
+service-account*.json
+
+# --- Python / Django (cactours_backend) ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Entornos virtuales
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Bases de datos locales y dumps con datos sensibles
+*.sqlite3
+*.sqlite3-journal
+db.sqlite3
+cactours_db
+*.sql
+*.dump
+
+# Archivos recopilados y subidos en tiempo de ejecución (Django)
+staticfiles/
+cactours_backend/staticfiles/
+cactours_backend/media/uploads/
+*.log
+local_settings.py
+
+# Testing y cobertura (Python)
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.mypy_cache/
+.ruff_cache/
+
+# --- Node.js / Vue.js + Vite (cactours_frontend) ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnpm-store/
+cactours_frontend/dist/
+cactours_frontend/dist-ssr/
+*.local
+.vite/
+
+# --- React Native / Expo (cactours_mobile) ---
+.expo/
+.expo-shared/
+cactours_mobile/dist/
+cactours_mobile/web-build/
+*.jks
+*.p8
+*.p12
+*.mobileprovision
+*.orig.*
+metro-health-check*
+
+# --- IDEs y Editores ---
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+.idea/
+*.swp
+*.swo
+*~
+
+# --- Sistema Operativo ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini

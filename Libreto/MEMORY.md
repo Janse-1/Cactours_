@@ -1,45 +1,19 @@
 # Memoria del proyecto
 
-Documento de continuidad para futuras sesiones de diseño y desarrollo. Registrar hechos verificados y decisiones aprobadas; no presentar propuestas como funcionalidades existentes.
+Documento de continuidad para sesiones de arquitectura, diseño y desarrollo.
 
-## Contexto actual
+## Contexto actual (Post-Refactorización Arquitectónica)
 
-- El repositorio contiene un proyecto Django en `cactours_django/`, una app Flask en `APP.py`, un SQL manual y recursos gráficos.
-- Django ya tiene páginas y modelos iniciales para tours, perfiles y reservas, pero el flujo de reserva requiere correcciones antes de usarse como fuente de verdad.
-- No hay app móvil ni API REST implementada todavía.
-- La suite de pruebas no contiene casos de negocio.
+- El proyecto fue refactorizado a una arquitectura monorepo de tres capas limpias:
+  1. `cactours_backend/`: Backend API REST en Django modularizado por dominio (`apps/common`, `apps/accounts`, `apps/tours`, `apps/bookings`, `apps/payments`) y configuración por entorno (`config/settings/base.py`, `dev.py`, `prod.py`).
+  2. `cactours_frontend/`: Aplicación Web SPA en **Vue.js 3 + Vite + Pinia + Vue Router** con los tokens de diseño oficiales de Cactours.
+  3. `cactours_mobile/`: Aplicación Móvil en **React Native + Expo** conectada a la misma API `/api/v1/`.
+- Se agregó `.gitignore` en la raíz del repositorio y plantillas `.env.example` para evitar subir claves secretas, contraseñas de base de datos, entornos virtuales (`.venv/`) o bases locales (`db.sqlite3`).
+- Se organizaron las dependencias del backend por caso de uso en `cactours_backend/requirements/` (`base.txt`, `dev.txt`, `prod.txt`).
 
-## Dirección de producto
+## Mejoras de lógica de negocio implementadas
 
-- Producto requerido: experiencia web y aplicación móvil.
-- Móvil elegida: React Native + Expo.
-- MVP: catálogo, cuentas, solicitudes de reserva, historial y administración.
-- Pagos: la primera versión no procesa pagos; el gateway se considera para una fase posterior.
-
-## Dirección técnica recomendada
-
-- Django como backend canónico; API REST compartida para Expo.
-- Django Templates responsive para la web del MVP.
-- Tailwind CSS, GSAP y Three.js como herramientas objetivo para UX/UI web, aplicadas de forma selectiva.
-- Estilo adicional a evaluar: anime.js, Lenis, glassmorphism y tarjetas 3D con spotlight reactivo. Beauty.js queda pendiente de confirmar por nombre exacto, documentación y mantenimiento antes de instalar.
-- Para móvil, evaluar NativeWind y usar Reanimated/Gesture Handler para movimiento nativo.
-- No asumir que una integración 3D está aprobada para todas las pantallas o dispositivos.
-
-## Identidad visual propuesta
-
-- Colores: Mineral Ivory `#F2EFE6`, Turquesa Cactours `#026374`, Azul petróleo `#156275`, Azul brillante `#069BE0`, Blanco `#FFFFFF` y Carbón `#111111`.
-- Tipografías: Manrope para títulos, DM Sans para interfaces/textos y Cormorant Garamond para detalles editoriales.
-- Revisar contraste WCAG antes de usar combinaciones de color en texto y controles. Los roles y límites están descritos en `DESIGN.md`.
-
-## Riesgos y asuntos por resolver
-
-- Hay desajustes entre campos/modelos de reserva y los datos enviados desde formularios.
-- Los modelos de reserva podrían duplicar historial; definir una entidad y relación canónicas.
-- Revisar protección de páginas privadas, roles y configuración de secretos antes de desplegar.
-- Confirmar si existen datos MySQL productivos que deban conservarse antes de migrar o retirar archivos antiguos.
-- Definir disponibilidad, cancelaciones, estados de reserva, hosting y proveedores de correo/medios.
-
-## Regla de actualización
-
-Al completar una decisión o fase, actualizar este documento y el correspondiente archivo (`DECISION.md`, `TASK.md` o `ARCHITECTURE.md`). Registrar la fecha solo si ayuda a reconstruir una decisión; evitar duplicar logs de conversaciones.
-
+- **Modelo canónico de reservas:** se eliminó la duplicación entre `Reserva`, `ReservaUsuario`, `Viaje` y `ToursOpc`. Ahora `apps.bookings.models.Reserva` y `ReservaOpcion` son la única fuente de verdad.
+- **Seguridad en registro:** se eliminó la asignación automática de `is_staff = True` para correos terminados en `@cactours.com`.
+- **Cálculo en servidor:** `BookingService` calcula todos los subtotales y totales con `Decimal` en el backend, incluyendo las opciones adicionales seleccionadas.
+- **Suite de pruebas automatizadas:** pruebas unitarias y de integración en `apps.accounts`, `apps.tours`, `apps.bookings` y `apps.payments` verificadas con `manage.py test`.

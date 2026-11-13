@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "Cactours",
+    "slug": "cactours-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#026374"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.cactours.mobile"
+    },
+    "android": {
+      "package": "com.cactours.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#026374"
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+# =============================================================================
+# CACTOURS BACKEND - Dependencias de Desarrollo y Pruebas
+# =============================================================================
+-r base.txt
+
+# Testing y Cobertura
+pytest>=8.0,<9.0
+pytest-django>=4.8,<5.0
+pytest-cov>=5.0,<6.0
+factory-boy>=3.3,<4.0
+
+# Calidad de Código, Linting y Formateo
+black>=24.8,<26.0
+flake8>=7.1,<8.0
+isort>=5.13,<6.0

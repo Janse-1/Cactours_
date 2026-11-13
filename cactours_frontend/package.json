@@ -1,0 +1,27 @@
+{
+  "name": "cactours-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plataforma Web SPA de Cactours construida con Vue 3, Vite, Pinia y Vue Router",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix"
+  },
+  "dependencies": {
+    "gsap": "^3.12.5",
+    "lucide-vue-next": "^0.454.0",
+    "pinia": "^2.2.6",
+    "vue": "^3.5.12",
+    "vue-router": "^4.4.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14",
+    "vite": "^5.4.10"
+  }
+}
