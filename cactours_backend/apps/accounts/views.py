@@ -1,7 +1,7 @@
 """Endpoints REST para Autenticación y Perfil (`/api/v1/auth/`)."""
 from django.contrib.auth import login, logout
 from apps.common.http import DomainError, api_handler, api_response, parse_json_body
-from apps.common.tokens import issue_token_pair, rotate_from_refresh_token
+from apps.common.tokens import issue_token_pair, rotate_from_refresh_token, revoke_token
 from .serializers import serialize_user_profile
 from .services import AccountService
 
@@ -63,9 +63,29 @@ def refresh_token_view(request):
 
 @api_handler(["POST"])
 def logout_view(request):
-    """POST /api/v1/auth/logout/ - Cierra la sesión activa."""
+    """
+    POST /api/v1/auth/logout/ - Cierra la sesión activa y revoca tokens.
+    Invalida el Bearer token activo y el refresh token (si se proporciona) en la lista negra.
+    """
+    auth_user = getattr(request, "user", None)
+    if auth_user and not auth_user.is_authenticated:
+        auth_user = None
+
+    # Revocar access token si viene en la cabecera Authorization
+    auth_header = request.META.get("HTTP_AUTHORIZATION", "")
+    if auth_header.startswith("Bearer "):
+        access_token = auth_header.split(" ", 1)[1].strip()
+        revoke_token(access_token, user=auth_user, motivo="LOGOUT")
+
+    # Revocar refresh token si se envía en el cuerpo JSON
+    payload = parse_json_body(request)
+    refresh_token = payload.get("refresh")
+    if refresh_token:
+        revoke_token(refresh_token, user=auth_user, motivo="LOGOUT")
+
     logout(request)
-    return api_response(message="Sesión cerrada correctamente.")
+    return api_response(message="Sesión cerrada y tokens revocados correctamente.")
+
 
 
 @api_handler(["GET", "PATCH"], auth_required=True)
