@@ -35,8 +35,6 @@ El repositorio también conserva `APP.py` y `cactours.sql` en la raíz. El punto
 
 ```text
 Cactours_/
-├── APP.py                         # Aplicación Flask heredada
-├── cactours.sql                   # Script SQL existente
 ├── README.md
 ├── Libreto/                       # Documentación funcional y técnica
 │   ├── ARCHITECTURE.md
