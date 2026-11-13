@@ -62,3 +62,26 @@ class UserProfileSerializer(serializers.ModelSerializer):
 # --- Función de compatibilidad ---
 def serialize_user_profile(user: User) -> dict:
     return UserProfileSerializer(user).data
+
+
+# --- Serializadores de Validación para Contraseñas ---
+class PasswordChangeSerializer(serializers.Serializer):
+    """Valida la petición de cambio de contraseña para usuario autenticado."""
+
+    password_actual = serializers.CharField(write_only=True, required=True)
+    password_nuevo = serializers.CharField(write_only=True, required=True, min_length=8)
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    """Valida la petición de solicitud de correo de recuperación."""
+
+    correo = serializers.EmailField(required=True)
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    """Valida la confirmación de recuperación con token temporal."""
+
+    uid = serializers.CharField(required=True)
+    token = serializers.CharField(required=True)
+    password_nuevo = serializers.CharField(write_only=True, required=True, min_length=8)
+
