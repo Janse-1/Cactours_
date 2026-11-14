@@ -7,8 +7,8 @@
         muted
         loop
         playsinline
-        :preload="prefersReducedMotion ? 'none' : 'metadata'"
-        :poster="featuredImage"
+        :preload="prefersReducedMotion ? 'none' : 'auto'"
+        poster="/images/video/hero-poster.jpg"
         aria-hidden="true"
       >
         <source src="/images/video/video4.mp4" type="video/mp4" />
@@ -32,11 +32,11 @@
             verdad.
           </p>
           <div class="hero-actions">
-            <a href="#territorios" class="hero-button hero-button--light">
+            <a href="#territorios" class="hero-button hero-button--light magnetic-button">
               Explorar el atlas 3D
               <ArrowUpRight :size="18" aria-hidden="true" />
             </a>
-            <RouterLink to="/tours" class="hero-button hero-button--quiet">
+            <RouterLink to="/tours" class="hero-button hero-button--quiet magnetic-button">
               Ver catálogo
               <ArrowUpRight :size="16" aria-hidden="true" />
             </RouterLink>
@@ -61,13 +61,7 @@
           <div class="scene-spark scene-spark--two" aria-hidden="true"></div>
 
           <article
-            class="destination-card"
-            :style="{
-              '--tilt-x': `${cardTilt.x}deg`,
-              '--tilt-y': `${cardTilt.y}deg`,
-            }"
-            @pointermove="moveCard"
-            @pointerleave="resetCard"
+            class="destination-card spotlight-card"
           >
             <img
               :key="activeDestination.id"
@@ -101,7 +95,7 @@
           <div class="scene-caption" role="group" aria-label="Cambiar destino destacado">
             <button
               type="button"
-              class="scene-control"
+              class="scene-control magnetic-button"
               aria-label="Destino anterior"
               @click="showPreviousDestination"
             >
@@ -111,7 +105,7 @@
             <span class="scene-caption__text">{{ activeDestination.category }}</span>
             <button
               type="button"
-              class="scene-control"
+              class="scene-control magnetic-button"
               aria-label="Siguiente destino"
               @click="showNextDestination"
             >
@@ -154,7 +148,7 @@
           <p class="manifesto-note">
             Hay lugares que no solo visitas: te cambian la mirada y se quedan en tu historia.
           </p>
-          <RouterLink to="/tours" class="manifesto-link">
+          <RouterLink to="/tours" class="manifesto-link magnetic-button">
             <span>Encuentra tu próxima historia</span>
             <span class="manifesto-link-icon"><ArrowUpRight :size="17" aria-hidden="true" /></span>
           </RouterLink>
@@ -165,7 +159,7 @@
           <figure
             v-for="(destination, index) in manifestoDestinations"
             :key="destination.id"
-            class="manifesto-photo"
+            class="manifesto-photo spotlight-card"
             :class="`manifesto-photo--${index + 1}`"
           >
             <img
@@ -202,7 +196,6 @@ import { useToursStore } from '@/stores/tours.store'
 import { tourMediaShowcases } from '@/data/tourMedia'
 
 const toursStore = useToursStore()
-const cardTilt = ref({ x: 0, y: 0 })
 const firstDestination = tourMediaShowcases.find((destination) => destination.id === 'san-andres')
 const featuredDestinations = [
   ...(firstDestination ? [firstDestination] : []),
@@ -226,7 +219,6 @@ function selectFeaturedDestination(index) {
   const count = featuredDestinations.length
   if (!count) return
   activeDestinationIndex.value = (index + count) % count
-  resetCard()
 }
 
 function showPreviousDestination() {
@@ -239,23 +231,6 @@ function showNextDestination() {
 
 function handleSceneFocusOut(event) {
   hasSceneFocus.value = event.currentTarget.contains(event.relatedTarget)
-}
-
-function moveCard(event) {
-  if (event.pointerType !== 'mouse') return
-
-  const bounds = event.currentTarget.getBoundingClientRect()
-  const horizontal = (event.clientX - bounds.left) / bounds.width
-  const vertical = (event.clientY - bounds.top) / bounds.height
-
-  cardTilt.value = {
-    x: (0.5 - vertical) * 8,
-    y: (horizontal - 0.5) * 10,
-  }
-}
-
-function resetCard() {
-  cardTilt.value = { x: 0, y: 0 }
 }
 
 onMounted(() => {
@@ -487,10 +462,8 @@ onBeforeUnmount(() => {
     0 42px 100px rgba(2, 18, 19, 0.52),
     0 0 0 8px rgba(255, 255, 255, 0.045),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  transform: perspective(1200px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) rotateZ(-3deg);
+  transform: perspective(1200px) rotateZ(-3deg);
   transform-style: preserve-3d;
-  transition: transform 450ms cubic-bezier(0.2, 0.75, 0.25, 1);
-  will-change: transform;
 }
 
 .destination-card__image,
@@ -1274,7 +1247,7 @@ onBeforeUnmount(() => {
     width: 220px;
     aspect-ratio: 0.88;
     border-radius: 135px 135px 20px 20px;
-    transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) rotateZ(-3deg);
+    transform: perspective(900px) rotateZ(-3deg);
   }
 
   .destination-card__topline {

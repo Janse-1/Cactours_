@@ -1,8 +1,6 @@
 <template>
   <article
-    class="tour-card"
-    @pointermove="handlePointerMove"
-    @pointerleave="resetSpotlight"
+    class="tour-card spotlight-card"
   >
     <div class="tour-media">
       <img
@@ -37,7 +35,7 @@
           <span class="price-label">Desde</span>
           <strong class="price-value">{{ formattedPrice }}</strong>
         </div>
-        <RouterLink :to="`/tours/${tour.id}`" class="tour-link">
+        <RouterLink :to="`/tours/${tour.id}`" class="tour-link magnetic-button">
           Ver experiencia
           <ArrowUpRight :size="17" aria-hidden="true" />
         </RouterLink>
@@ -75,37 +73,12 @@ const coverImage = computed(() => resolveTourCover(props.tour))
 watch(() => props.tour.id, () => {
   imageUnavailable.value = false
 })
-
-function handlePointerMove(event) {
-  if (
-    event.pointerType !== 'mouse'
-    || window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    || !window.matchMedia('(hover: hover) and (pointer: fine)').matches
-  ) {
-    return
-  }
-
-  const bounds = event.currentTarget.getBoundingClientRect()
-  const x = ((event.clientX - bounds.left) / bounds.width) * 100
-  const y = ((event.clientY - bounds.top) / bounds.height) * 100
-  event.currentTarget.style.setProperty('--spotlight-x', `${x}%`)
-  event.currentTarget.style.setProperty('--spotlight-y', `${y}%`)
-  event.currentTarget.style.setProperty('--tilt-x', `${(50 - y) * 0.035}deg`)
-  event.currentTarget.style.setProperty('--tilt-y', `${(x - 50) * 0.035}deg`)
-}
-
-function resetSpotlight(event) {
-  event.currentTarget.style.setProperty('--tilt-x', '0deg')
-  event.currentTarget.style.setProperty('--tilt-y', '0deg')
-}
 </script>
 
 <style scoped>
 .tour-card {
   --spotlight-x: 50%;
   --spotlight-y: 0%;
-  --tilt-x: 0deg;
-  --tilt-y: 0deg;
   position: relative;
   min-width: 0;
   overflow: hidden;
@@ -294,8 +267,7 @@ function resetSpotlight(event) {
 
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .tour-card {
-    position: relative;
-    transform: perspective(900px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+    transform: perspective(900px);
     transition:
       box-shadow 250ms ease,
       transform 180ms ease-out;

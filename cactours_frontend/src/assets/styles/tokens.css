@@ -102,13 +102,13 @@ a[href],
 }
 
 :where(button:not(:disabled), a[href], [role='button']) {
-  transition: transform 180ms var(--motion-spring);
+  transition: scale 180ms var(--motion-spring);
 }
 
 button:not(:disabled):active,
 a[href]:active,
 [role='button']:active {
-  transform: scale(0.975);
+  scale: 0.975;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -131,6 +131,29 @@ h1, h2, h3, h4, h5, h6 {
 
 .main-container {
   flex: 1;
+}
+
+html:has(.app-shell--immersive-auth),
+body:has(.app-shell--immersive-auth) {
+  background-color: #071819 !important;
+  background: #071819 !important;
+}
+
+.app-shell--immersive-login,
+.app-shell--immersive-auth {
+  min-height: 100svh;
+  background: #071819 !important;
+}
+
+.main-container--immersive-login,
+.main-container--immersive-auth {
+  display: flex;
+  min-height: 100svh;
+}
+
+.app-shell--auth-navigation-hidden .navbar {
+  pointer-events: none;
+  opacity: 0;
 }
 
 .container {
@@ -172,7 +195,11 @@ h1, h2, h3, h4, h5, h6 {
   border: none;
   cursor: pointer;
   text-decoration: none;
-  transition: background-color 0.2s ease, transform 0.15s ease;
+  transition:
+    scale 180ms var(--motion-spring),
+    background-color 0.2s ease,
+    box-shadow 180ms ease,
+    translate 220ms var(--motion-spring);
 }
 
 .btn-primary:hover {
@@ -183,6 +210,7 @@ h1, h2, h3, h4, h5, h6 {
   cursor: not-allowed;
   opacity: 0.62;
   transform: none;
+  translate: none;
 }
 
 .btn-accent {
@@ -197,6 +225,11 @@ h1, h2, h3, h4, h5, h6 {
   border: none;
   cursor: pointer;
   text-decoration: none;
+  transition:
+    scale 180ms var(--motion-spring),
+    background-color 0.2s ease,
+    box-shadow 180ms ease,
+    translate 220ms var(--motion-spring);
 }
 
 .surface-card {
@@ -207,6 +240,15 @@ h1, h2, h3, h4, h5, h6 {
   transition:
     box-shadow 260ms var(--motion-glide),
     transform 260ms var(--motion-glide);
+}
+
+.spotlight-card {
+  position: relative;
+  isolation: isolate;
+}
+
+.spotlight-card--flat {
+  transform-style: flat;
 }
 
 .badge {
@@ -240,6 +282,57 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .spotlight-card {
+    --tilt-axis-x: 0;
+    --tilt-axis-y: 1;
+    --tilt-angle: 0deg;
+    rotate: var(--tilt-axis-x) var(--tilt-axis-y) 0 var(--tilt-angle);
+    transform-style: preserve-3d;
+    transition:
+      rotate 140ms var(--motion-spring),
+      box-shadow 260ms var(--motion-glide);
+  }
+
+  .spotlight-card:not(.tour-card)::before {
+    position: absolute;
+    z-index: 3;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      260px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%),
+      rgba(255, 255, 255, 0.3),
+      transparent 76%
+    );
+    content: '';
+    opacity: 0;
+    mix-blend-mode: soft-light;
+    pointer-events: none;
+    transition: opacity 220ms ease;
+  }
+
+  .spotlight-card.is-pointer-active:not(.tour-card)::before {
+    opacity: 0.9;
+  }
+
+  .spotlight-card.is-pointer-active {
+    will-change: rotate;
+  }
+
+  .spotlight-card--flat {
+    rotate: none;
+    transform-style: flat;
+  }
+
+  :where(.btn-primary, .btn-accent, .magnetic-button) {
+    --magnetic-x: 0px;
+    --magnetic-y: 0px;
+    translate: var(--magnetic-x) var(--magnetic-y);
+  }
+
+  :where(.btn-primary, .btn-accent, .magnetic-button).is-pointer-active {
+    will-change: translate;
+  }
+
   .surface-card:hover {
     box-shadow: 0 18px 42px rgba(2, 44, 49, 0.12);
     transform: translateY(-3px);
@@ -405,11 +498,27 @@ h1, h2, h3, h4, h5, h6 {
   button:not(:disabled):active,
   a[href]:active,
   [role='button']:active {
-    transform: none;
+    scale: 1;
   }
 
   .surface-card {
     transition: none;
+  }
+
+  .spotlight-card {
+    rotate: none;
+    transition: none;
+    will-change: auto;
+  }
+
+  .spotlight-card::before {
+    display: none;
+  }
+
+  :where(.btn-primary, .btn-accent, .magnetic-button) {
+    translate: none;
+    transition: none;
+    will-change: auto;
   }
 
   *,

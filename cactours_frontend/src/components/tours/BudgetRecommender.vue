@@ -1,5 +1,5 @@
 <template>
-  <section class="budget-card" aria-labelledby="budget-title">
+  <section class="budget-card spotlight-card spotlight-card--flat" aria-labelledby="budget-title">
     <header class="budget-card-heading">
       <div class="budget-heading-copy">
         <div class="budget-icon"><Wallet :size="21" aria-hidden="true" /></div>
@@ -61,7 +61,7 @@
 
     <div
       v-if="toursStore.recommendation?.plan_sugerido"
-      class="recommendation-result"
+      class="recommendation-result spotlight-card spotlight-card--flat"
       aria-live="polite"
     >
       <div class="recommendation-title">

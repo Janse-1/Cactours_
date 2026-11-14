@@ -39,11 +39,15 @@ Definir fallback del sistema para cada familia y probar legibilidad en pantallas
 ### Web
 
 - **Tailwind CSS:** sistema principal de estilos de la web. Compilar sus clases a CSS estático para las plantillas Django y reutilizar componentes visuales.
+- **Vue 3 + Vite:** único runtime de interfaz para la web. Mantener React Native + Expo en la app móvil; no montar React dentro de la SPA Vue para microinteracciones.
 - **GSAP:** animaciones web puntuales, como entrada de secciones, transiciones de carrusel o detalles de interacción. Mantener el contenido y la navegación utilizables sin animaciones.
+- **Login inmersivo:** la ruta de inicio de sesión puede ocultar la navegación global y usar el video optimizado como único fondo visual. Ofrecer un control para pausarlo y detenerlo con movimiento reducido; limitar glassmorphism y neumorfismo a esta superficie, con contraste y controles accesibles.
+- **Framer Motion:** no instalar en la SPA web porque depende de React. Reutilizar GSAP para timelines y escenas, y CSS con variables para spotlight, inclinación y magnetismo; evitar dos motores sobre el mismo elemento.
 - **anime.js:** candidato para microinteracciones sencillas si reduce complejidad; no duplicar con GSAP la animación de un mismo componente. Elegir y documentar una sola herramienta por interacción.
 - **Lenis:** candidato para desplazamiento suave en páginas editoriales/de presentación, no para el flujo de reserva por defecto. Respetar movimiento reducido, gestos táctiles y scroll nativo; si se integra con GSAP ScrollTrigger, sincronizar un único ciclo de animación y limpiar listeners.
-- **Glassmorphism:** recurso visual para overlays y superficies puntuales sobre fotografía, con fondo suficientemente opaco, borde y contraste verificado. No usarlo como estilo general de formularios ni como sustituto de una superficie legible.
-- **Tarjetas 3D con spotlight reactivo:** efecto opcional para tarjetas promocionales de tours. Responder a movimiento de puntero en web; desactivar inclinación/spotlight en dispositivos táctiles y con movimiento reducido, y conservar una tarjeta plana como fallback.
+- **Glassmorphism:** recurso visual para overlays y superficies puntuales sobre fotografía, con fondo suficientemente opaco, borde y contraste verificado. El login inmersivo es una excepción acotada; no usarlo como estilo general de formularios ni como sustituto de una superficie legible.
+- **Tarjetas 3D con spotlight reactivo:** usar la clase compartida `.spotlight-card` en tarjetas editoriales, destinos, tours, perfil y estados. Un solo `v-pointer-effects` delegado en `.app-shell` actualiza el foco y la inclinación con variables CSS; limitar la inclinación a 6° y activar solo con puntero fino y movimiento permitido.
+- **Botones magnéticos:** usar `.magnetic-button` en acciones destacadas y aplicar también a `.btn-primary`/`.btn-accent`. Limitar el desplazamiento a 8 px, no cambiar el área clicable y excluir controles deshabilitados.
 - **Three.js:** experiencias 3D selectivas relacionadas con destinos (por ejemplo, una escena destacada en una landing), solo si aportan valor frente a fotografía/video optimizados. Cargar bajo demanda y ofrecer una alternativa estática.
 - **Iconografía:** usar una familia consistente, como Lucide, en vez de mezclar estilos de iconos.
 
@@ -60,6 +64,9 @@ Definir fallback del sistema para cada familia y probar legibilidad en pantallas
 
 - GSAP, anime.js, Lenis y Three.js son candidatos de web y no deben cargarse globalmente sin necesidad.
 - No usar simultáneamente GSAP y anime.js para controlar el mismo elemento o timeline.
+- Mantener una sola capa compartida de eventos de puntero; no agregar manejadores independientes de inclinación a cada tarjeta.
+- Los efectos CSS de puntero no deben competir con `transform` de GSAP: usar `rotate`/`translate` individuales y variables CSS, limitar el efecto a superficies marcadas y limpiar el estado al salir o desmontar.
+- Formularios, cotizaciones y acciones de reserva usan spotlight plano (`.spotlight-card--flat`) para no mover campos o controles mientras se interactúa.
 - Lenis no debe reemplazar el desplazamiento nativo en formularios, listados largos o navegación móvil si empeora el control del usuario.
 - Las tarjetas 3D, glassmorphism y spotlight son decoración progresiva: su ausencia no puede ocultar texto, controles, estados ni foco.
 - Medir carga, fluidez y consumo en dispositivos reales antes de habilitar efectos en pantallas de reserva.
@@ -69,7 +76,7 @@ Definir fallback del sistema para cada familia y probar legibilidad en pantallas
 - Compartir curvas y tiempos de movimiento mediante tokens; reservar las respuestas rápidas para controles y las entradas más lentas para contenido editorial.
 - Dar feedback inmediato a botones, enlaces, campos y selección de tours; el estado debe seguir siendo comprensible sin hover, animación ni sonido.
 - Usar vidrio esmerilado donde haya contexto visual detrás —navegación flotante y etiquetas sobre fotografía— con tinte, borde luminoso, sombra y contraste suficiente. Evitarlo en superficies de lectura prolongada.
-- Preferir brillo, escala leve, elevación y desplazamientos cortos a movimiento continuo. Desactivar transformaciones decorativas y transiciones de ruta con movimiento reducido.
+- Preferir brillo, escala leve, elevación y desplazamientos cortos a movimiento continuo. El spotlight y magnetismo solo se activan en puntero fino; eliminarlos en táctil y con `prefers-reduced-motion`.
 
 ## Principios UX
 

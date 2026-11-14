@@ -102,7 +102,7 @@
       <button
         v-if="hasActiveFilters"
         type="button"
-        class="text-action catalog-clear-filters"
+        class="text-action catalog-clear-filters magnetic-button"
         @click="clearFilters"
       >
         Limpiar filtros
@@ -147,7 +147,7 @@
           : 'El catálogo aún no publica fichas para reservar. Mientras tanto, explora nuestros destinos y consulta su disponibilidad con Cactours.'"
       >
         <template #actions>
-          <button v-if="hasActiveFilters" type="button" class="text-action" @click="clearFilters">
+          <button v-if="hasActiveFilters" type="button" class="text-action magnetic-button" @click="clearFilters">
             Ver todo el catálogo
           </button>
           <RouterLink v-else to="/#territorios" class="btn-primary">
@@ -171,7 +171,11 @@
         </header>
 
         <div class="local-tour-grid">
-          <article v-for="destination in tourMediaShowcases" :key="destination.id" class="local-tour-card">
+          <article
+            v-for="destination in tourMediaShowcases"
+            :key="destination.id"
+            class="local-tour-card spotlight-card"
+          >
             <div class="local-tour-image">
               <img :src="destination.gallery[0].url" :alt="destination.gallery[0].alt" loading="lazy" />
             </div>
@@ -179,7 +183,7 @@
               <p>{{ destination.destination }}</p>
               <h3>{{ destination.name }}</h3>
               <span class="local-tour-category">{{ destination.category }}</span>
-              <a :href="destination.contactUrl" class="local-tour-contact">
+              <a :href="destination.contactUrl" class="local-tour-contact magnetic-button">
                 Consultar disponibilidad
                 <ArrowUpRight :size="16" aria-hidden="true" />
               </a>

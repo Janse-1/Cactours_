@@ -93,7 +93,7 @@
           </ul>
         </div>
 
-        <div class="detail-booking-card">
+        <div class="detail-booking-card spotlight-card spotlight-card--flat">
           <div>
             <span class="detail-price-label">Precio base por persona</span>
             <strong class="detail-price">{{ formattedPrice }}</strong>
