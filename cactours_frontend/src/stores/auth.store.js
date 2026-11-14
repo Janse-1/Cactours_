@@ -2,6 +2,17 @@ import { defineStore } from 'pinia'
 import { authService } from '@/api/auth.service'
 import { clearSessionTokens, getAccessToken } from '@/api/httpClient'
 
+function getErrorMessage(error) {
+  const details = error?.details
+  const messages = details && typeof details === 'object'
+    ? Object.values(details)
+        .flatMap((value) => (Array.isArray(value) ? value : [value]))
+        .filter((value) => typeof value === 'string' && value.trim())
+    : []
+
+  return messages.length ? [...new Set(messages)].join(' ') : error.message
+}
+
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
@@ -35,7 +46,7 @@ export const useAuthStore = defineStore('auth', {
         this.user = await authService.login(credentials)
         return this.user
       } catch (err) {
-        this.error = err.message
+        this.error = getErrorMessage(err)
         throw err
       } finally {
         this.loading = false
@@ -49,7 +60,7 @@ export const useAuthStore = defineStore('auth', {
         this.user = await authService.register(payload)
         return this.user
       } catch (err) {
-        this.error = err.message
+        this.error = getErrorMessage(err)
         throw err
       } finally {
         this.loading = false

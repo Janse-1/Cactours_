@@ -82,7 +82,8 @@ def api_handler(allowed_methods: list[str], *, auth_required: bool = False, staf
                 return api_error(exc.message, status=exc.status_code, details=exc.details)
             except ValidationError as exc:
                 details = exc.message_dict if hasattr(exc, "message_dict") else {"non_field_errors": exc.messages}
-                return api_error("Error de validación en los datos enviados.", status=400, details=details)
+                message = " ".join(exc.messages) or "Error de validación en los datos enviados."
+                return api_error(message, status=400, details=details)
 
         return _wrapped
 
