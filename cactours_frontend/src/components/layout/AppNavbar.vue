@@ -1,5 +1,12 @@
 <template>
-  <header class="navbar" :class="{ 'navbar--home': route.name === 'home' }">
+  <header
+    class="navbar"
+    :class="{
+      'navbar--home': route.name === 'home',
+      'navbar--auth': isAuthRoute,
+      'navbar--hidden': hidden && !mobileMenuOpen,
+    }"
+  >
     <div class="container navbar-inner">
       <RouterLink to="/" class="brand" @click="closeMenu">
         <img :src="logoUrl" alt="Logo Cactours" class="brand-logo" />
@@ -33,11 +40,11 @@
           <RouterLink to="/mi-perfil" @click="closeMenu">
             Mis Reservas ({{ authStore.user?.persona?.nombre || authStore.user?.username }})
           </RouterLink>
-          <button type="button" class="btn-logout" @click="handleLogout">Cerrar sesión</button>
+          <button type="button" class="btn-logout magnetic-button" @click="handleLogout">Cerrar sesión</button>
         </template>
         <template v-else>
           <RouterLink to="/login" @click="closeMenu">Iniciar Sesión</RouterLink>
-          <RouterLink to="/registro" class="nav-cta" @click="closeMenu">
+          <RouterLink to="/registro" class="nav-cta magnetic-button" @click="closeMenu">
             Crear Cuenta
             <ArrowUpRight :size="15" aria-hidden="true" />
           </RouterLink>
@@ -48,16 +55,25 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { ArrowUpRight, Menu, X } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
+
+defineProps({
+  hidden: {
+    type: Boolean,
+    default: false,
+  },
+})
 
 const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
 const mobileMenuOpen = ref(false)
 const logoUrl = '/images/logo-cactours.png'
+
+const isAuthRoute = computed(() => route.name === 'login' || route.name === 'register')
 
 function closeMenu() {
   mobileMenuOpen.value = false
@@ -93,7 +109,9 @@ async function handleLogout() {
   transition:
     background 260ms ease,
     box-shadow 260ms ease,
-    transform 260ms var(--motion-glide);
+    transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 240ms ease;
+  will-change: transform, opacity;
 }
 
 .navbar::before {
@@ -114,9 +132,67 @@ async function handleLogout() {
   left: 50%;
   margin: 0;
   background:
-    linear-gradient(120deg, rgba(14, 67, 70, 0.44), rgba(5, 28, 31, 0.26)),
-    rgba(5, 28, 31, 0.24);
+    linear-gradient(120deg, rgba(14, 67, 70, 0.55), rgba(5, 28, 31, 0.35)),
+    rgba(5, 28, 31, 0.35);
   transform: translateX(-50%);
+}
+
+.navbar--auth {
+  position: fixed;
+  top: 0.65rem;
+  left: 50%;
+  width: min(calc(100% - 3.5rem), 1080px);
+  margin: 0;
+  padding: 0.28rem 0;
+  background:
+    linear-gradient(120deg, rgba(14, 67, 70, 0.58), rgba(5, 28, 31, 0.42)),
+    rgba(5, 28, 31, 0.38);
+  transform: translateX(-50%);
+}
+
+.navbar--auth .navbar-inner {
+  min-height: 46px;
+}
+
+.navbar--auth .brand-logo {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+}
+
+.navbar--auth .brand-name {
+  font-size: 1.14rem;
+}
+
+.navbar--auth .brand-slogan {
+  font-size: 0.63rem;
+}
+
+.navbar--auth .nav-links {
+  gap: clamp(0.75rem, 1.8vw, 1.4rem);
+}
+
+.navbar--auth .nav-links a {
+  font-size: 0.76rem;
+}
+
+.navbar--auth .nav-links .nav-cta {
+  min-height: 35px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.74rem;
+}
+
+.navbar--hidden {
+  transform: translateY(calc(-100% - 2.5rem)) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.navbar--home.navbar--hidden,
+.navbar--auth.navbar--hidden {
+  transform: translate(-50%, calc(-100% - 2.5rem)) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 .navbar-inner {
@@ -239,6 +315,13 @@ async function handleLogout() {
   transform: translateY(-2px);
 }
 
+.nav-links .nav-cta.router-link-exact-active {
+  border-color: rgba(6, 155, 224, 0.85);
+  background: rgba(6, 155, 224, 0.28);
+  color: var(--color-blanco);
+  box-shadow: 0 0 20px rgba(6, 155, 224, 0.35);
+}
+
 .btn-logout {
   border: 1px solid rgba(255, 255, 255, 0.42);
   border-radius: 999px;
@@ -285,7 +368,8 @@ async function handleLogout() {
       rgba(7, 37, 41, 0.86);
   }
 
-  .navbar--home {
+  .navbar--home,
+  .navbar--auth {
     top: 0.55rem;
     left: 50%;
     width: calc(100% - 1rem);
