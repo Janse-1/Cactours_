@@ -64,6 +64,13 @@ Definir fallback del sistema para cada familia y probar legibilidad en pantallas
 - Las tarjetas 3D, glassmorphism y spotlight son decoración progresiva: su ausencia no puede ocultar texto, controles, estados ni foco.
 - Medir carga, fluidez y consumo en dispositivos reales antes de habilitar efectos en pantallas de reserva.
 
+### Microinteracciones
+
+- Compartir curvas y tiempos de movimiento mediante tokens; reservar las respuestas rápidas para controles y las entradas más lentas para contenido editorial.
+- Dar feedback inmediato a botones, enlaces, campos y selección de tours; el estado debe seguir siendo comprensible sin hover, animación ni sonido.
+- Usar vidrio esmerilado donde haya contexto visual detrás —navegación flotante y etiquetas sobre fotografía— con tinte, borde luminoso, sombra y contraste suficiente. Evitarlo en superficies de lectura prolongada.
+- Preferir brillo, escala leve, elevación y desplazamientos cortos a movimiento continuo. Desactivar transformaciones decorativas y transiciones de ruta con movimiento reducido.
+
 ## Principios UX
 
 - Hacer visibles el destino, lo incluido, la duración y el precio antes de iniciar la reserva.

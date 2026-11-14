@@ -31,7 +31,31 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
-  scrollBehavior() {
+  scrollBehavior(to) {
+    if (to.hash) {
+      const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+      return new Promise((resolve) => {
+        let attempts = 0
+        const scrollToTarget = () => {
+          const target = document.getElementById(to.hash.slice(1))
+          if (target) {
+            resolve({ el: target, behavior })
+            return
+          }
+
+          if (attempts >= 40) {
+            resolve({ top: 0 })
+            return
+          }
+
+          attempts += 1
+          window.setTimeout(scrollToTarget, 50)
+        }
+
+        scrollToTarget()
+      })
+    }
+
     return { top: 0 }
   },
 })

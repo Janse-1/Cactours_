@@ -265,3 +265,22 @@ class AccountsDomainAndApiTests(TestCase):
         self.assertEqual(replay_resp.status_code, 401)
 
 
+    def test_api_register_returns_password_validation_message(self):
+        response = self.client.post(
+            "/api/v1/auth/register/",
+            data=json.dumps(
+                {
+                    "nombre": "Ana",
+                    "apellido": "Wayuu",
+                    "identificacion": "99887766",
+                    "correo": "ana@example.com",
+                    "telefono": "3109998877",
+                    "password": "password",
+                }
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertNotEqual(response.json()["error"], "Error de validación en los datos enviados.")
+        self.assertIn("non_field_errors", response.json()["details"])

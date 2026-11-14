@@ -97,6 +97,12 @@ npm run dev
 
 La aplicación web estará disponible en `http://localhost:5173` conectada a `http://localhost:8000/api/v1`.
 
+### Sistema visual compartido
+
+- Los colores, tipografías, escalas, controles y foco global se definen en `cactours_frontend/src/assets/styles/tokens.css`.
+- `cactours_frontend/src/components/feedback/FeedbackState.vue` unifica estados de carga, error, vacío y éxito. Usa `variant`, `title` y `message`; las acciones opcionales van en el slot `actions`.
+- Conserva las etiquetas nativas de los formularios y ofrece una vista estática cuando el usuario prefiere movimiento reducido.
+
 ---
 
 ## 3. Configuración de la App Móvil en React Native (`cactours_mobile`)

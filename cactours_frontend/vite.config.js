@@ -9,6 +9,35 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          const normalizedId = id.replace(/\\/g, '/')
+          if (normalizedId.includes('/node_modules/gsap/')) {
+            return 'animation-vendor'
+          }
+          if (!normalizedId.includes('/node_modules/three/src/')) return
+
+          const threeEngineDirectories = [
+            '/renderers/',
+            '/materials/',
+            '/nodes/',
+            '/objects/',
+            '/scenes/',
+            '/cameras/',
+            '/lights/',
+            '/extras/',
+          ]
+          if (normalizedId.endsWith('/extras/ImageUtils.js')) return 'three-core'
+          if (threeEngineDirectories.some((directory) => normalizedId.includes(directory))) {
+            return 'three-engine'
+          }
+          return 'three-core'
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     proxy: {
