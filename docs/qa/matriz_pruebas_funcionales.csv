@@ -1,0 +1,35 @@
+ID,Modulo,Tipo,Precondicion,Pasos,Datos_Prueba,Resultado_Esperado,Prioridad,Estado
+TC-AUTH-01,Autenticacion,Positiva,BD activa,POST /api/v1/auth/register/,"nombre=Ana, correo=ana@example.com",201 Created con tokens access y refresh,P1,Pasa
+TC-AUTH-02,Autenticacion,Seguridad,Ninguna,Registrar correo @cactours.com,correo=fake@cactours.com,201 Created pero is_staff=False siempre,P1,Pasa
+TC-AUTH-03,Autenticacion,Negativa,Usuario existente,Registrar correo duplicado,correo=ana@example.com,400 Bad Request correo duplicado,P1,Pasa
+TC-AUTH-04,Autenticacion,Negativa/Limite,Ninguna,Registrar con password debil,password=1234,400 Bad Request error longitud minima,P1,Pasa
+TC-AUTH-05,Autenticacion,Positiva,Usuario activo,POST /api/v1/auth/login/,"ana@example.com, Password123!",200 OK con tokens y datos usuario,P1,Pasa
+TC-AUTH-06,Autenticacion,Negativa,Usuario activo,POST /api/v1/auth/login/ con clave errada,"ana@example.com, ClaveErrada",401 Unauthorized credenciales invalidas,P1,Pasa
+TC-AUTH-07,Autenticacion,Seguridad,Sin token,GET /api/v1/auth/me/ sin auth,Sin Authorization header,401 Unauthorized acceso denegado,P1,Pasa
+TC-AUTH-08,Autenticacion,Positiva,Token valido,GET /api/v1/auth/me/ con Bearer,Token ana@example.com,200 OK con perfil de cliente,P1,Pasa
+TC-AUTH-09,Autenticacion,Positiva,Token valido,PATCH /api/v1/auth/me/ actualizar datos,telefono=3109998877,200 OK datos actualizados,P2,Pasa
+TC-AUTH-10,Autenticacion,Positiva,Refresh token,POST /api/v1/auth/refresh/,refresh_token valido,200 OK nuevo access token emitido,P1,Pasa
+TC-TOUR-01,Catalogo Tours,Positiva,Tours en BD,GET /api/v1/tours/ sin filtros,Tours publicado/borrador/inactivo,200 OK solo lista tours PUBLICADOS,P1,Pasa
+TC-TOUR-02,Catalogo Tours,Positiva,Tours en BD,Filtrar por texto GET /api/v1/tours/?q=Cabo,q=Cabo,200 OK tours coincidentes,P2,Pasa
+TC-TOUR-03,Catalogo Tours,Positiva,Tours en BD,Filtrar por presupuesto GET /api/v1/tours/?presupuesto_max=150000,presupuesto_max=150000,200 OK tours costo <= 150000 COP,P2,Pasa
+TC-TOUR-04,Catalogo Tours,Positiva,Tour publicado,GET /api/v1/tours/<id>/,ID tour publicado,200 OK con detalle galeria y opciones,P2,Pasa
+TC-TOUR-05,Catalogo Tours,Negativa/Limite,Tour inactivo,GET /api/v1/tours/<id_inactivo>/,ID tour inactivo,404 Not Found tour no disponible,P2,Pasa
+TC-TOUR-06,Recomendador,Positiva,Tours en BD,POST /api/v1/tours/recomendador/,"presupuesto=500000, personas=2",200 OK plan CONFORT y lista compatibles,P1,Pasa
+TC-TOUR-07,Recomendador,Negativa/Limite,Ninguna,POST con personas=0 o presupuesto negativo,"presupuesto=-1000, personas=0",400 Bad Request parametros invalidos,P2,Pasa
+TC-BOOK-01,Cotizador,Positiva,Tour con opciones,POST /api/v1/bookings/cotizar/,"tour_id=1, personas=3, opciones=[1]",200 OK calculo exacto en servidor,P1,Pasa
+TC-BOOK-02,Cotizador,Negativa,Opción ajena,Cotizar con opcion no perteneciente al tour,ID opcion ajena,400 Bad Request opcion invalida,P1,Pasa
+TC-BOOK-03,Reservas,Seguridad,Token Cliente A,POST /api/v1/bookings/ con costo_total alterado,costo_total=1.00 cliente,201 Created servidor ignora valor falso y calcula real,P1,Pasa
+TC-BOOK-04,Reservas,Negativa/Limite,Cupo maximo 10,Crear reserva con 15 personas,cant_personas=15 cupo=10,400 Bad Request cupo excedido,P1,Pasa
+TC-BOOK-05,Reservas,Seguridad/Aislamiento,Token Cliente B,GET /api/v1/bookings/<id_reserva_A>/,ID reserva de Cliente A,404 Not Found cliente no ve reservas ajenas,P1,Pasa
+TC-BOOK-06,Reservas,Seguridad/Aislamiento,Token Cliente B,PATCH cancelar reserva de Cliente A,ID reserva de Cliente A,404 Not Found cliente no puede cancelar ajena,P1,Pasa
+TC-BOOK-07,Reservas,Positiva,Token Cliente A,PATCH cancelar su propia reserva,estado=CANCELADA,200 OK reserva cancelada con exito,P1,Pasa
+TC-PAY-01,Pagos,Positiva,Reserva creada,POST /api/v1/payments/ con WOMPI,"reserva_id=1, proveedor=WOMPI",201 Created intencion pago igual al costo_total,P1,Pasa
+TC-PAY-02,Pagos,Seguridad/Aislamiento,Token Cliente B,POST pagar reserva de Cliente A,Token B y reserva de A,400/404 Rechazo de pago de reservas ajenas,P1,Pasa
+TC-PAY-03,Pagos,Negativa/Limite,Reserva cancelada,POST pagar reserva cancelada,reserva_id CANCELADA,400 Bad Request no permite pagar reserva cancelada,P1,Pasa
+TC-WEB-01,Web Hero,Usabilidad,Navegador,Recargar pagina de inicio /,Local o 4G,Escena carga poster fotograma 0 sin parpadeo,P1,Pasa
+TC-WEB-02,Web Login,Funcional,Ruta /login,Login correcto,Credenciales ana@example.com,Boton feedback y redireccion a perfil,P1,Pasa
+TC-WEB-03,Web Tablero,Interactividad,/login,Clic en segmento de salidas,Clic en segmento 3,Tablero gira split-flap a destino seleccionado,P2,Pasa
+TC-WEB-04,Web Registro,Funcional,/registro,Registro completo viajero,Datos nuevos validos,Credencial interactiva y redireccion perfil,P1,Pasa
+TC-WEB-05,Web Navbar,Usabilidad,Cualquier ruta,Scroll abajo y arriba,Scroll > 60px,Navbar se esconde al bajar y aparece al subir,P2,Pasa
+TC-WEB-06,Web Accesibilidad,Accesibilidad,SO accesible,prefers-reduced-motion activo,Flag activada,Videos pausados animaciones 3D desactivadas,P1,Pasa
+TC-WEB-07,Web Responsive,Responsive,Mobile viewport,Navegacion en 360px a 480px,Galaxy S20 iPhone 14,Sin overflow-x tarjetas y botones legibles,P1,Pasa
