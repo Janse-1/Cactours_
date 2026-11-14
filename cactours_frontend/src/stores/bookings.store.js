@@ -7,6 +7,7 @@ export const useBookingsStore = defineStore('bookings', {
     currentQuote: null,
     loading: false,
     error: null,
+    cancellingBookingId: null,
   }),
 
   actions: {
@@ -40,6 +41,20 @@ export const useBookingsStore = defineStore('bookings', {
         throw err
       } finally {
         this.loading = false
+      }
+    },
+
+    async cancelBooking(bookingId) {
+      this.cancellingBookingId = bookingId
+      try {
+        const updatedBooking = await bookingsService.cancelBooking(bookingId)
+        const bookingIndex = this.bookings.findIndex((booking) => booking.id === bookingId)
+        if (bookingIndex >= 0) this.bookings[bookingIndex] = updatedBooking
+        return updatedBooking
+      } catch (err) {
+        throw err
+      } finally {
+        this.cancellingBookingId = null
       }
     },
   },

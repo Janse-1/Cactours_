@@ -1,24 +1,46 @@
 <template>
-  <header class="navbar">
+  <header class="navbar" :class="{ 'navbar--home': route.name === 'home' }">
     <div class="container navbar-inner">
-      <RouterLink to="/" class="brand">
-        <img src="/images/Icono.ico" alt="Logo de Cactours" class="brand-logo" />
+      <RouterLink to="/" class="brand" @click="closeMenu">
+        <img :src="logoUrl" alt="Logo Cactours" class="brand-logo" />
         <div>
           <span class="brand-name">Cactours</span>
           <small class="brand-slogan">Tu presupuesto, nuestra inspiración</small>
         </div>
       </RouterLink>
 
-      <nav class="nav-links" aria-label="Navegación principal">
-        <RouterLink to="/">Inicio</RouterLink>
-        <RouterLink to="/tours">Catálogo de Tours</RouterLink>
+      <button
+        class="menu-toggle"
+        type="button"
+        :aria-expanded="mobileMenuOpen"
+        aria-controls="primary-navigation"
+        :aria-label="mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'"
+        @click="mobileMenuOpen = !mobileMenuOpen"
+      >
+        <X v-if="mobileMenuOpen" :size="21" aria-hidden="true" />
+        <Menu v-else :size="21" aria-hidden="true" />
+      </button>
+
+      <nav
+        id="primary-navigation"
+        class="nav-links"
+        :class="{ 'nav-links--open': mobileMenuOpen }"
+        aria-label="Navegación principal"
+      >
+        <RouterLink to="/" @click="closeMenu">Inicio</RouterLink>
+        <RouterLink to="/tours" @click="closeMenu">Catálogo de Tours</RouterLink>
         <template v-if="authStore.isAuthenticated">
-          <RouterLink to="/mi-perfil">Mis Reservas ({{ authStore.user?.persona?.nombre || authStore.user?.username }})</RouterLink>
+          <RouterLink to="/mi-perfil" @click="closeMenu">
+            Mis Reservas ({{ authStore.user?.persona?.nombre || authStore.user?.username }})
+          </RouterLink>
           <button type="button" class="btn-logout" @click="handleLogout">Cerrar sesión</button>
         </template>
         <template v-else>
-          <RouterLink to="/login">Iniciar Sesión</RouterLink>
-          <RouterLink to="/registro" class="btn-accent">Crear Cuenta</RouterLink>
+          <RouterLink to="/login" @click="closeMenu">Iniciar Sesión</RouterLink>
+          <RouterLink to="/registro" class="nav-cta" @click="closeMenu">
+            Crear Cuenta
+            <ArrowUpRight :size="15" aria-hidden="true" />
+          </RouterLink>
         </template>
       </nav>
     </div>
@@ -26,13 +48,23 @@
 </template>
 
 <script setup>
-import { RouterLink, useRouter } from 'vue-router'
+import { ref } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { ArrowUpRight, Menu, X } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 
 const authStore = useAuthStore()
+const route = useRoute()
 const router = useRouter()
+const mobileMenuOpen = ref(false)
+const logoUrl = '/images/logo-cactours.png'
+
+function closeMenu() {
+  mobileMenuOpen.value = false
+}
 
 async function handleLogout() {
+  closeMenu()
   await authStore.logout()
   router.push('/login')
 }
@@ -40,74 +72,336 @@ async function handleLogout() {
 
 <style scoped>
 .navbar {
-  background-color: var(--color-turquesa-cactours);
-  color: var(--color-blanco);
-  padding: 0.9rem 0;
   position: sticky;
-  top: 0;
+  top: 0.75rem;
   z-index: 50;
+  width: min(calc(100% - 2rem), 1440px);
+  margin: 0.75rem auto 0;
+  overflow: visible;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background:
+    linear-gradient(120deg, rgba(17, 83, 87, 0.82), rgba(7, 37, 41, 0.66)),
+    rgba(7, 37, 41, 0.74);
+  color: var(--color-blanco);
+  padding: 0.5rem 0;
+  box-shadow:
+    0 12px 36px rgba(3, 26, 29, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  -webkit-backdrop-filter: blur(24px) saturate(165%);
+  backdrop-filter: blur(24px) saturate(165%);
+  transition:
+    background 260ms ease,
+    box-shadow 260ms ease,
+    transform 260ms var(--motion-glide);
+}
+
+.navbar::before {
+  position: absolute;
+  top: 1px;
+  right: 7%;
+  left: 7%;
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+  content: '';
+  pointer-events: none;
+}
+
+.navbar--home {
+  position: fixed;
+  top: 0.85rem;
+  left: 50%;
+  margin: 0;
+  background:
+    linear-gradient(120deg, rgba(14, 67, 70, 0.44), rgba(5, 28, 31, 0.26)),
+    rgba(5, 28, 31, 0.24);
+  transform: translateX(-50%);
 }
 
 .navbar-inner {
   display: flex;
+  min-height: 54px;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
   color: var(--color-blanco);
   text-decoration: none;
 }
 
 .brand-logo {
-  width: 42px;
-  height: 42px;
+  width: 58px;
+  height: 58px;
+  min-width: 58px;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.75);
   border-radius: 50%;
   object-fit: cover;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12);
+  transition:
+    box-shadow 280ms ease,
+    transform 420ms var(--motion-glide);
+}
+
+.brand:hover .brand-logo {
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.2);
+  transform: rotate(-6deg) scale(1.05);
 }
 
 .brand-name {
   display: block;
   font-family: var(--font-heading);
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
 }
 
 .brand-slogan {
   display: block;
-  font-size: 0.78rem;
-  opacity: 0.9;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.7rem;
+  letter-spacing: 0.015em;
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  flex-wrap: wrap;
+  gap: clamp(1rem, 2.4vw, 2rem);
 }
 
 .nav-links a {
-  color: var(--color-blanco);
+  position: relative;
+  color: rgba(255, 255, 255, 0.83);
+  font-size: 0.8rem;
+  font-weight: 600;
   text-decoration: none;
-  font-weight: 500;
+  transition:
+    color 180ms ease,
+    transform 180ms var(--motion-spring);
 }
 
-.nav-links a.btn-accent {
+.nav-links a:not(.nav-cta)::after {
+  position: absolute;
+  right: 0;
+  bottom: -0.45rem;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-azul-brillante), transparent);
+  content: '';
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 240ms var(--motion-glide);
+}
+
+.nav-links a:hover,
+.nav-links a.router-link-exact-active:not(.nav-cta) {
+  color: var(--color-blanco);
+}
+
+.nav-links a:hover::after,
+.nav-links a.router-link-exact-active:not(.nav-cta)::after {
+  transform: scaleX(1);
+}
+
+.nav-links .nav-cta {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid rgba(255, 255, 255, 0.56);
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.11);
+  color: var(--color-blanco);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  transition:
+    border-color 220ms ease,
+    background 220ms ease,
+    color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms var(--motion-spring);
+}
+
+.nav-links .nav-cta:hover {
+  border-color: rgba(6, 155, 224, 0.8);
+  background: rgba(6, 155, 224, 0.9);
   color: var(--color-carbon);
-  padding: 0.45rem 1rem;
+  box-shadow: 0 8px 26px rgba(6, 155, 224, 0.28);
+  transform: translateY(-2px);
 }
 
 .btn-logout {
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 999px;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.6);
   color: var(--color-blanco);
-  padding: 0.4rem 0.85rem;
-  border-radius: var(--radius-sm);
+  padding: 0.55rem 1rem;
   cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+}
+
+.menu-toggle {
+  display: none;
+  width: 42px;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-blanco);
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 260ms var(--motion-spring);
+}
+
+.menu-toggle:hover {
+  border-color: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.18);
+  transform: rotate(8deg);
+}
+
+@media (max-width: 760px) {
+  .navbar {
+    top: 0.45rem;
+    width: calc(100% - 1rem);
+    margin-top: 0.45rem;
+    border-radius: 22px;
+    padding: 0.55rem 0;
+    background:
+      linear-gradient(120deg, rgba(17, 83, 87, 0.88), rgba(7, 37, 41, 0.82)),
+      rgba(7, 37, 41, 0.86);
+  }
+
+  .navbar--home {
+    top: 0.55rem;
+    left: 50%;
+    width: calc(100% - 1rem);
+    margin-top: 0;
+    background:
+      linear-gradient(120deg, rgba(14, 67, 70, 0.48), rgba(5, 28, 31, 0.3)),
+      rgba(5, 28, 31, 0.28);
+    transform: translateX(-50%);
+  }
+
+  .navbar-inner {
+    gap: 0.6rem;
+  }
+
+  .brand-logo {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+  }
+
+  .brand-name {
+    font-size: 1.12rem;
+  }
+
+  .brand-slogan {
+    font-size: 0.62rem;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+    flex: 0 0 auto;
+  }
+
+  .nav-links {
+    position: absolute;
+    top: calc(100% + 0.4rem);
+    right: 1rem;
+    left: 1rem;
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.15rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 18px;
+    padding: 0.65rem;
+    background: rgba(12, 46, 49, 0.82);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.24);
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transform: translateY(-8px) scale(0.98);
+    transform-origin: top right;
+    transition:
+      opacity 180ms ease,
+      transform 240ms var(--motion-glide),
+      visibility 180ms ease;
+    -webkit-backdrop-filter: blur(24px) saturate(165%);
+    backdrop-filter: blur(24px) saturate(165%);
+  }
+
+  .nav-links--open {
+    opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+
+  .nav-links a,
+  .btn-logout {
+    min-height: 44px;
+    align-items: center;
+    border-radius: 11px;
+    padding: 0.7rem 0.8rem;
+  }
+
+  .nav-links .nav-cta {
+    justify-content: space-between;
+    border-color: transparent;
+  }
+}
+
+@media (max-width: 380px) {
+  .brand {
+    gap: 0.5rem;
+  }
+
+  .brand-logo {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+  }
+
+  .brand-name {
+    font-size: 1.05rem;
+  }
+
+  .brand-slogan {
+    max-width: 175px;
+    font-size: 0.55rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navbar,
+  .brand-logo,
+  .nav-links,
+  .nav-links a,
+  .nav-links .nav-cta,
+  .menu-toggle {
+    transition: none;
+  }
+
+  .brand:hover .brand-logo,
+  .nav-links .nav-cta:hover,
+  .menu-toggle:hover {
+    transform: none;
+  }
 }
 </style>

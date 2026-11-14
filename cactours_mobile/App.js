@@ -7,7 +7,7 @@ export default function App() {
 
   return (
     <>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <CatalogScreen onSelectTour={setSelectedTour} selectedTour={selectedTour} />
     </>
   )

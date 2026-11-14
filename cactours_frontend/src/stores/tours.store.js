@@ -6,49 +6,62 @@ export const useToursStore = defineStore('tours', {
     tours: [],
     selectedTour: null,
     recommendation: null,
-    loading: false,
-    error: null,
+    catalogLoading: false,
+    catalogError: null,
+    catalogRequestId: 0,
+    detailLoading: false,
+    detailError: null,
+    recommendationLoading: false,
+    recommendationError: null,
   }),
 
   actions: {
     async fetchTours(filters = {}) {
-      this.loading = true
-      this.error = null
+      const requestId = ++this.catalogRequestId
+      this.catalogLoading = true
+      this.catalogError = null
       try {
         const data = await toursService.listTours(filters)
-        this.tours = data.results || []
+        if (requestId === this.catalogRequestId) {
+          this.tours = data.results || []
+        }
       } catch (err) {
-        this.error = err.message
+        if (requestId === this.catalogRequestId) {
+          this.catalogError = err.message
+        }
       } finally {
-        this.loading = false
+        if (requestId === this.catalogRequestId) {
+          this.catalogLoading = false
+        }
       }
     },
 
     async fetchTourDetail(tourId) {
-      this.loading = true
-      this.error = null
+      this.detailLoading = true
+      this.detailError = null
+      this.selectedTour = null
       try {
         this.selectedTour = await toursService.getTourDetail(tourId)
         return this.selectedTour
       } catch (err) {
-        this.error = err.message
+        this.detailError = err.message
         throw err
       } finally {
-        this.loading = false
+        this.detailLoading = false
       }
     },
 
     async runBudgetRecommender(presupuesto, cantidadPersonas = 1) {
-      this.loading = true
-      this.error = null
+      this.recommendationLoading = true
+      this.recommendationError = null
       try {
         this.recommendation = await toursService.recommendByBudget(presupuesto, cantidadPersonas)
         return this.recommendation
       } catch (err) {
-        this.error = err.message
+        this.recommendationError = err.message
         throw err
       } finally {
-        this.loading = false
+        this.recommendationLoading = false
       }
     },
   },
