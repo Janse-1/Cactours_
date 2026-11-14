@@ -1,497 +1,387 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  AccessibilityInfo,
   ActivityIndicator,
   FlatList,
+  ImageBackground,
   Pressable,
-  SafeAreaView,
+  RefreshControl,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native'
-import { BlurView } from 'expo-blur'
-import Animated, {
-  FadeInDown,
-  FadeOutDown,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated'
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
+import { Ionicons } from '@expo/vector-icons'
+import { LinearGradient } from 'expo-linear-gradient'
 import { mobileApiRequest } from '../api/client'
-import { colors, radii, spacing } from '../theme/tokens'
+import { BrandMark, Notice, useReduceMotion } from '../components/ui'
+import { colors, radii, shadows, spacing } from '../theme/tokens'
+import { formatCop, getTourImage } from '../utils/tourMedia'
 
-function TourCard({ item, index, selected, reduceMotion, onSelect }) {
+const categories = ['Todos', 'La Guajira', 'Caribe', 'Naturaleza']
+
+function TourCard({ item, navigation, reduceMotion }) {
   const scale = useSharedValue(1)
-  const pressStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }))
-  const entering = reduceMotion
-    ? undefined
-    : FadeInDown.delay(Math.min(index, 6) * 75).duration(520)
+  const animatedStyle = useAnimatedStyle(() => ({ opacity: scale.value }))
 
-  function setPressed(isPressed) {
-    if (!reduceMotion) {
-      scale.value = withSpring(isPressed ? 0.985 : 1, { damping: 16, stiffness: 320 })
-    }
+  function setPressed(pressed) {
+    if (!reduceMotion) scale.value = withSpring(pressed ? 0.8 : 1, { damping: 16, stiffness: 280 })
   }
 
   return (
-    <Animated.View
-      entering={entering}
-      style={[styles.card, pressStyle, selected && styles.cardSelected]}
-    >
-      <View style={styles.cardTopline}>
-        <Text style={styles.destination}>{item.ciudad_destino}</Text>
-        <View style={styles.glassDot} />
-      </View>
-      <Text style={styles.title}>{item.nombre_tour}</Text>
-      <Text style={styles.description} numberOfLines={3}>
-        {item.descripcion}
-      </Text>
-      <View style={styles.cardFooter}>
-        <View>
-          <Text style={styles.priceLabel}>DESDE</Text>
-          <Text style={styles.price}>
-            ${Number(item.costo).toLocaleString('es-CO')} COP
-          </Text>
-        </View>
+    <View style={styles.tourCard}>
+      <Animated.View style={[styles.pressScale, animatedStyle]}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`${selected ? 'Tour seleccionado' : 'Seleccionar tour'} ${item.nombre_tour}`}
-          onPress={() => onSelect?.(item)}
+          accessibilityLabel={`Ver detalles de ${item.nombre_tour}`}
+          onPress={() => navigation.navigate('TourDetail', { tour: item })}
           onPressIn={() => setPressed(true)}
           onPressOut={() => setPressed(false)}
-          style={({ pressed }) => [styles.ctaButton, pressed && styles.ctaButtonPressed]}
+          style={styles.tourPressable}
         >
-          <Text style={styles.ctaText}>{selected ? 'Seleccionado' : 'Explorar tour'}</Text>
-          <Text style={styles.ctaArrow} accessibilityElementsHidden>
-            ↗
-          </Text>
+          <ImageBackground
+            source={{ uri: getTourImage(item) }}
+            resizeMode="cover"
+            imageStyle={styles.tourImage}
+            style={styles.tourImageFrame}
+          >
+            <LinearGradient colors={['rgba(4,32,35,0.03)', 'rgba(4,32,35,0.78)']} style={StyleSheet.absoluteFill} />
+            <View style={styles.cardTop}>
+              <View style={styles.locationChip}>
+                <Ionicons name="location" size={11} color={colors.blanco} />
+                <Text style={styles.locationText}>{item.ciudad_destino}</Text>
+              </View>
+              <View style={styles.daysPill}>
+                <Text style={styles.daysText}>{item.duracion_dias} {item.duracion_dias === 1 ? 'DÍA' : 'DÍAS'}</Text>
+              </View>
+            </View>
+            <View style={styles.cardBottom}>
+              <Text style={styles.cardEyebrow}>EXPEDICIÓN CACTOURS</Text>
+              <Text style={styles.cardTitle} numberOfLines={2}>{item.nombre_tour}</Text>
+              <Text style={styles.cardDescription} numberOfLines={2}>{item.descripcion}</Text>
+              <View style={styles.cardFooter}>
+                <View>
+                  <Text style={styles.priceLabel}>DESDE / PERSONA</Text>
+                  <Text style={styles.price}>{formatCop(item.costo)}</Text>
+                </View>
+                <View style={styles.cardArrow}>
+                  <Ionicons name="arrow-up-outline" size={17} color={colors.ink} />
+                </View>
+              </View>
+            </View>
+          </ImageBackground>
         </Pressable>
-      </View>
-    </Animated.View>
+      </Animated.View>
+    </View>
   )
 }
 
-export default function CatalogScreen({ onSelectTour, selectedTour }) {
+export default function CatalogScreen({ navigation, onProfile }) {
   const [tours, setTours] = useState([])
+  const [search, setSearch] = useState('')
+  const [activeCategory, setActiveCategory] = useState('Todos')
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState(null)
-  const [reduceMotion, setReduceMotion] = useState(true)
+  const [retryKey, setRetryKey] = useState(0)
+  const reduceMotion = useReduceMotion()
 
-  const loadTours = useCallback(() => {
-    setLoading(true)
+  const loadTours = useCallback(async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true)
+    else setLoading(true)
     setError(null)
-    mobileApiRequest('/tours/')
-      .then((data) => setTours(data.results || []))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false))
-  }, [])
+    try {
+      const data = await mobileApiRequest('/tours/')
+      setTours(data.results || [])
+    } catch (requestError) {
+      setError(requestError.message)
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }, [retryKey])
 
   useEffect(() => {
     loadTours()
   }, [loadTours])
 
-  useEffect(() => {
-    let active = true
-    AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
-      if (active) setReduceMotion(enabled)
+  const filteredTours = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase('es-CO')
+    return tours.filter((tour) => {
+      const searchableText = `${tour.nombre_tour} ${tour.ciudad_destino} ${tour.descripcion}`.toLocaleLowerCase('es-CO')
+      if (query && !searchableText.includes(query)) return false
+
+      const destination = `${tour.ciudad_destino} ${tour.nombre_tour}`.toLocaleLowerCase('es-CO')
+      if (activeCategory === 'La Guajira' && !destination.includes('guajira') && !destination.includes('punta gallinas')) return false
+      if (activeCategory === 'Caribe' && !destination.includes('cabo') && !destination.includes('mayapo') && !destination.includes('caribe')) return false
+      if (activeCategory === 'Naturaleza' && !destination.includes('amazonas') && !destination.includes('montes') && !destination.includes('eje')) return false
+      return true
     })
-    const subscription = AccessibilityInfo.addEventListener(
-      'reduceMotionChanged',
-      setReduceMotion,
-    )
-    return () => {
-      active = false
-      subscription.remove()
-    }
-  }, [])
+  }, [activeCategory, search, tours])
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <BlurView
-          intensity={36}
-          tint="dark"
-          experimentalBlurMethod="dimezisBlurView"
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={styles.headerTint} pointerEvents="none" />
-        <View style={styles.headerGlow} pointerEvents="none" />
-        <View style={styles.headerEyebrow}>
-          <View style={styles.liveDot} />
-          <Text style={styles.headerEyebrowText}>EXPEDICIONES CON RAÍZ</Text>
-        </View>
-        <Text style={styles.brand}>Cactours</Text>
-        <Text style={styles.subtitle}>Descubre La Guajira y Colombia</Text>
-        <View style={styles.headerRule} />
-      </View>
-
-      {loading ? (
-        <ActivityIndicator size="large" color={colors.turquesaCactours} style={styles.loader} />
-      ) : error ? (
-        <Animated.View
-          entering={reduceMotion ? undefined : FadeInDown.duration(360)}
-          style={styles.stateCard}
-        >
-          <Text style={styles.stateEyebrow}>NO PUDIMOS CONECTAR</Text>
-          <Text style={styles.errorText}>{error}</Text>
-          <Pressable accessibilityRole="button" onPress={loadTours} style={styles.retryButton}>
-            <Text style={styles.retryText}>Intentar de nuevo</Text>
-          </Pressable>
-        </Animated.View>
-      ) : tours.length === 0 ? (
-        <Animated.View
-          entering={reduceMotion ? undefined : FadeInDown.duration(420)}
-          style={styles.stateCard}
-        >
-          <Text style={styles.stateEyebrow}>PRÓXIMA SALIDA</Text>
-          <Text style={styles.emptyTitle}>El territorio está preparando algo.</Text>
-          <Text style={styles.emptyText}>
-            Aún no hay tours publicados. Vuelve pronto para descubrir nuevas rutas.
-          </Text>
-        </Animated.View>
-      ) : (
-        <FlatList
-          data={tours}
-          keyExtractor={(item) => String(item.id)}
-          contentContainerStyle={styles.listContent}
-          renderItem={({ item, index }) => (
-            <TourCard
-              item={item}
-              index={index}
-              selected={selectedTour?.id === item.id}
-              reduceMotion={reduceMotion}
-              onSelect={onSelectTour}
-            />
-          )}
-        />
-      )}
-
-      {selectedTour && !loading && !error && (
-        <Animated.View
-          entering={reduceMotion ? undefined : FadeInDown.duration(320)}
-          exiting={reduceMotion ? undefined : FadeOutDown.duration(180)}
-          style={styles.selectionDock}
-        >
-          <BlurView
-            intensity={64}
-            tint="dark"
-            experimentalBlurMethod="dimezisBlurView"
-            style={StyleSheet.absoluteFill}
+    <View style={styles.screen}>
+      <FlatList
+        data={loading || error ? [] : filteredTours}
+        keyExtractor={(item) => String(item.id)}
+        renderItem={({ item }) => (
+          <TourCard item={item} navigation={navigation} reduceMotion={reduceMotion} />
+        )}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => loadTours(true)}
+            tintColor={colors.turquesaCactours}
+            colors={[colors.turquesaCactours]}
           />
-          <View style={styles.selectionTint} pointerEvents="none" />
-          <View style={styles.selectionGlassHighlight} pointerEvents="none" />
-          <View style={styles.selectionCopy}>
-            <Text style={styles.selectionEyebrow}>TU ELECCIÓN</Text>
-            <Text style={styles.selectionTitle} numberOfLines={1}>
-              {selectedTour.nombre_tour}
-            </Text>
+        }
+        ListHeaderComponent={
+          <View>
+            <View style={styles.topbar}>
+              <BrandMark />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Abrir mi cuenta"
+                onPress={onProfile}
+                style={({ pressed }) => [styles.profileButton, pressed && styles.pressed]}
+              >
+                <Ionicons name="person-outline" size={19} color={colors.turquesaCactours} />
+              </Pressable>
+            </View>
+            <View style={styles.intro}>
+              <Text style={styles.eyebrow}>VIAJA CON RAÍZ</Text>
+              <Text style={styles.title}>Tu próxima historia{'\n'}<Text style={styles.titleAccent}>empieza aquí.</Text></Text>
+              <Text style={styles.description}>
+                Encuentra una experiencia que se ajuste a tu forma de viajar.
+              </Text>
+            </View>
+            <View style={styles.searchBox}>
+              <Ionicons name="search-outline" size={19} color={colors.turquesaCactours} />
+              <TextInput
+                accessibilityLabel="Buscar tours"
+                value={search}
+                onChangeText={setSearch}
+                placeholder="Busca un destino o experiencia"
+                placeholderTextColor="#8A9691"
+                returnKeyType="search"
+                style={styles.searchInput}
+              />
+              {search ? (
+                <Pressable accessibilityRole="button" accessibilityLabel="Limpiar búsqueda" onPress={() => setSearch('')}>
+                  <Ionicons name="close-circle" size={19} color={colors.muted} />
+                </Pressable>
+              ) : null}
+            </View>
+            <FlatList
+              horizontal
+              data={categories}
+              keyExtractor={(item) => item}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoryList}
+              renderItem={({ item }) => {
+                const active = activeCategory === item
+                return (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    onPress={() => setActiveCategory(item)}
+                    style={[styles.categoryChip, active && styles.categoryChipActive]}
+                  >
+                    <Text style={[styles.categoryText, active && styles.categoryTextActive]}>{item}</Text>
+                  </Pressable>
+                )
+              }}
+            />
+            <View style={styles.resultsHeading}>
+              <View>
+                <Text style={styles.eyebrow}>ELIGE TU PRÓXIMA SALIDA</Text>
+                <Text style={styles.resultsTitle}>Experiencias</Text>
+              </View>
+              {!loading && !error ? (
+                <Text style={styles.resultsCount}>
+                  {filteredTours.length} {filteredTours.length === 1 ? 'ruta' : 'rutas'}
+                </Text>
+              ) : null}
+            </View>
           </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Quitar tour seleccionado"
-            onPress={() => onSelectTour?.(null)}
-            style={styles.selectionRemove}
-          >
-            <Text style={styles.selectionRemoveText}>Quitar</Text>
-          </Pressable>
-        </Animated.View>
-      )}
-    </SafeAreaView>
+        }
+        ListEmptyComponent={
+          loading ? (
+            <View style={styles.statePanel}>
+              <ActivityIndicator size="large" color={colors.turquesaCactours} />
+              <Text style={styles.stateTitle}>Buscando rutas para ti...</Text>
+              <Text style={styles.stateCopy}>Un momento, estamos preparando el atlas.</Text>
+            </View>
+          ) : error ? (
+            <View style={styles.statePanel}>
+              <Notice title="No pudimos cargar el catálogo" message={error} />
+              <Pressable accessibilityRole="button" onPress={() => setRetryKey((key) => key + 1)} style={styles.retryButton}>
+                <Text style={styles.retryButtonText}>Intentar de nuevo</Text>
+                <Ionicons name="refresh" size={16} color={colors.blanco} />
+              </Pressable>
+            </View>
+          ) : (
+            <View style={styles.statePanel}>
+              <Ionicons name="compass-outline" size={32} color={colors.turquesaCactours} />
+              <Text style={styles.stateTitle}>
+                {search || activeCategory !== 'Todos' ? 'No encontramos esa ruta.' : 'Una nueva ruta está por nacer.'}
+              </Text>
+              <Text style={styles.stateCopy}>
+                {search || activeCategory !== 'Todos'
+                  ? 'Prueba otro destino o cambia el filtro.'
+                  : 'Aún no hay tours publicados. Vuelve pronto para descubrir nuevas experiencias.'}
+              </Text>
+            </View>
+          )
+        }
+        ListFooterComponent={
+          !loading && !error && filteredTours.length ? (
+            <View style={styles.footerNote}>
+              <Ionicons name="leaf-outline" size={15} color={colors.turquesaCactours} />
+              <Text style={styles.footerText}>Elige con calma. Cada detalle importa.</Text>
+            </View>
+          ) : null
+        }
+      />
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.mineralIvory,
-  },
-  header: {
-    position: 'relative',
-    overflow: 'hidden',
-    backgroundColor: 'rgba(2,99,116,0.42)',
-    marginHorizontal: spacing.md,
-    marginTop: spacing.sm,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
-    borderRadius: radii.lg,
-    padding: spacing.lg,
-    shadowColor: '#03343B',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
-    elevation: 8,
-  },
-  headerTint: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(2,99,116,0.56)',
-  },
-  headerGlow: {
-    position: 'absolute',
-    top: -72,
-    right: -46,
-    width: 190,
-    height: 190,
-    borderRadius: 100,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.22)',
-  },
-  headerEyebrow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  },
-  liveDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: colors.azulBrillante,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.8)',
-  },
-  headerEyebrowText: {
-    color: 'rgba(255,255,255,0.78)',
-    fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 1.8,
-  },
-  brand: {
-    color: colors.blanco,
-    fontSize: 32,
-    fontWeight: '800',
-    letterSpacing: -1.5,
-  },
-  subtitle: {
-    color: 'rgba(255,255,255,0.78)',
-    marginTop: 2,
-    fontSize: 13,
-  },
-  headerRule: {
-    height: 1,
-    width: '42%',
-    marginTop: spacing.md,
-    backgroundColor: 'rgba(255,255,255,0.38)',
-  },
-  loader: {
-    flex: 1,
-  },
-  stateCard: {
-    margin: spacing.md,
-    padding: spacing.lg,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.75)',
-    backgroundColor: 'rgba(255,255,255,0.64)',
-    shadowColor: '#123C3E',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.08,
-    shadowRadius: 28,
-    elevation: 3,
-  },
-  stateEyebrow: {
-    color: colors.turquesaCactours,
-    fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 1.7,
-  },
-  emptyTitle: {
-    color: colors.carbon,
-    fontSize: 22,
-    fontWeight: '800',
-    letterSpacing: -0.5,
-    marginTop: spacing.sm,
-  },
-  emptyText: {
-    color: '#53615E',
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: spacing.xs,
-  },
-  retryButton: {
-    alignSelf: 'flex-start',
-    marginTop: spacing.md,
-    borderRadius: 999,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs + 2,
-    backgroundColor: colors.turquesaCactours,
-  },
-  retryText: {
-    color: colors.blanco,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  errorText: {
-    color: colors.errorText,
-    fontSize: 14,
-    marginTop: spacing.xs,
-  },
-  listContent: {
-    padding: spacing.md,
-    paddingBottom: 132,
-  },
-  card: {
-    backgroundColor: 'rgba(255,255,255,0.87)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.94)',
-    borderRadius: radii.md,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    shadowColor: '#123C3E',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 3,
-  },
-  cardSelected: {
-    borderColor: colors.azulBrillante,
-    shadowColor: colors.azulBrillante,
-    shadowOpacity: 0.18,
-  },
-  cardTopline: {
+  screen: { flex: 1 },
+  listContent: { paddingBottom: spacing.lg },
+  topbar: {
+    minHeight: 66,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    marginBottom: 2,
   },
-  destination: {
-    color: colors.azulPetroleo,
-    fontWeight: '700',
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 1.2,
-  },
-  glassDot: {
-    width: 27,
-    height: 27,
-    borderRadius: 14,
+  profileButton: {
+    width: 42,
+    height: 42,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radii.pill,
     borderWidth: 1,
     borderColor: 'rgba(2,99,116,0.16)',
-    backgroundColor: 'rgba(6,155,224,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.72)',
   },
-  title: {
-    color: colors.turquesaCactours,
-    fontSize: 21,
-    fontWeight: '700',
-    letterSpacing: -0.5,
+  intro: { paddingHorizontal: spacing.md, paddingTop: spacing.md, paddingBottom: spacing.md },
+  eyebrow: { marginBottom: 7, color: colors.turquesaCactours, fontSize: 9, fontWeight: '800', letterSpacing: 1.6 },
+  title: { color: colors.ink, fontSize: 34, fontWeight: '800', letterSpacing: -1.3, lineHeight: 37 },
+  titleAccent: { color: colors.turquesaCactours, fontStyle: 'italic', fontWeight: '600' },
+  description: { maxWidth: 330, marginTop: 9, color: colors.muted, fontSize: 12, lineHeight: 19 },
+  searchBox: {
+    minHeight: 53,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginHorizontal: spacing.md,
+    borderWidth: 1,
+    borderColor: 'rgba(2,99,116,0.12)',
+    borderRadius: radii.md,
+    paddingHorizontal: 14,
+    backgroundColor: colors.blanco,
+    ...shadows.subtle,
+  },
+  searchInput: { minWidth: 0, flex: 1, color: colors.ink, fontSize: 12, paddingVertical: 12 },
+  categoryList: { gap: 8, paddingHorizontal: spacing.md, paddingVertical: spacing.md },
+  categoryChip: {
+    minHeight: 34,
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(2,99,116,0.14)',
+    borderRadius: radii.pill,
+    paddingHorizontal: 14,
+    backgroundColor: 'rgba(255,255,255,0.64)',
+  },
+  categoryChipActive: { borderColor: colors.turquesaCactours, backgroundColor: colors.turquesaCactours },
+  categoryText: { color: colors.muted, fontSize: 10, fontWeight: '700' },
+  categoryTextActive: { color: colors.blanco },
+  resultsHeading: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
     marginTop: spacing.xs,
-    marginBottom: 4,
+    marginBottom: spacing.md,
   },
-  description: {
-    color: '#53615E',
-    fontSize: 14,
-    lineHeight: 21,
+  resultsTitle: { color: colors.ink, fontSize: 22, fontWeight: '800', letterSpacing: -0.7 },
+  resultsCount: { color: colors.muted, fontSize: 10, paddingBottom: 4 },
+  tourCard: {
+    minHeight: 344,
+    overflow: 'hidden',
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    borderRadius: radii.lg,
+    backgroundColor: colors.azulPetroleo,
+    ...shadows.card,
   },
+  pressScale: { flex: 1 },
+  tourPressable: { flex: 1, overflow: 'hidden', borderRadius: radii.lg },
+  tourImageFrame: { minHeight: 344, justifyContent: 'space-between', padding: spacing.md },
+  tourImage: { borderRadius: radii.lg },
+  cardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  locationChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.42)',
+    borderRadius: radii.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    backgroundColor: 'rgba(4,35,38,0.36)',
+  },
+  locationText: { color: colors.blanco, fontSize: 9, fontWeight: '800' },
+  daysPill: {
+    borderRadius: radii.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    backgroundColor: 'rgba(255,255,255,0.92)',
+  },
+  daysText: { color: colors.ink, fontSize: 8, fontWeight: '800', letterSpacing: 0.8 },
+  cardBottom: { gap: 7 },
+  cardEyebrow: { color: '#B8D7D1', fontSize: 8, fontWeight: '800', letterSpacing: 1.4 },
+  cardTitle: { color: colors.blanco, fontSize: 23, fontWeight: '800', letterSpacing: -0.8, lineHeight: 27 },
+  cardDescription: { color: 'rgba(255,255,255,0.79)', fontSize: 11, lineHeight: 17 },
   cardFooter: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: spacing.md,
-    paddingTop: spacing.sm,
+    justifyContent: 'space-between',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(17,17,17,0.08)',
+    borderTopColor: 'rgba(255,255,255,0.24)',
+    marginTop: 7,
+    paddingTop: 12,
   },
-  priceLabel: {
-    color: '#687571',
-    fontSize: 9,
-    fontWeight: '700',
-    letterSpacing: 1.4,
+  priceLabel: { marginBottom: 3, color: 'rgba(255,255,255,0.69)', fontSize: 8, fontWeight: '700', letterSpacing: 0.7 },
+  price: { color: colors.blanco, fontSize: 16, fontWeight: '800' },
+  cardArrow: {
+    width: 38,
+    height: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radii.pill,
+    backgroundColor: colors.blanco,
   },
-  price: {
-    fontWeight: '800',
-    fontSize: 15,
-    color: colors.turquesaCactours,
-    marginTop: 2,
-  },
-  ctaButton: {
-    backgroundColor: colors.azulBrillante,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: 999,
+  statePanel: { minHeight: 220, alignItems: 'center', justifyContent: 'center', gap: 12, padding: spacing.lg },
+  stateTitle: { color: colors.ink, fontSize: 17, fontWeight: '800', textAlign: 'center' },
+  stateCopy: { maxWidth: 280, color: colors.muted, fontSize: 12, lineHeight: 18, textAlign: 'center' },
+  retryButton: {
+    minHeight: 44,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    shadowColor: colors.azulBrillante,
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 2,
+    borderRadius: radii.pill,
+    paddingHorizontal: 16,
+    backgroundColor: colors.turquesaCactours,
   },
-  ctaButtonPressed: {
-    backgroundColor: '#38B5EB',
-  },
-  ctaText: {
-    color: colors.carbon,
-    fontWeight: '700',
-    fontSize: 11,
-  },
-  ctaArrow: {
-    color: colors.carbon,
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  selectionDock: {
-    position: 'absolute',
-    right: spacing.md,
-    bottom: spacing.md,
-    left: spacing.md,
-    minHeight: 76,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.46)',
-    borderRadius: radii.lg,
-    paddingHorizontal: spacing.md,
-    backgroundColor: 'rgba(2,99,116,0.42)',
-    shadowColor: '#032E33',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.28,
-    shadowRadius: 24,
-    elevation: 12,
-  },
-  selectionTint: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(2,99,116,0.48)',
-  },
-  selectionGlassHighlight: {
-    position: 'absolute',
-    top: 0,
-    left: 18,
-    width: '45%',
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.8)',
-  },
-  selectionCopy: {
-    flex: 1,
-    paddingRight: spacing.sm,
-  },
-  selectionEyebrow: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 1.5,
-  },
-  selectionTitle: {
-    color: colors.blanco,
-    fontSize: 15,
-    fontWeight: '700',
-    marginTop: 3,
-  },
-  selectionRemove: {
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.32)',
-    borderRadius: 999,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    backgroundColor: 'rgba(255,255,255,0.11)',
-  },
-  selectionRemoveText: {
-    color: colors.blanco,
-    fontSize: 11,
-    fontWeight: '700',
-  },
+  retryButtonText: { color: colors.blanco, fontSize: 11, fontWeight: '800' },
+  footerNote: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 7, padding: spacing.md },
+  footerText: { color: colors.muted, fontSize: 10 },
+  pressed: { opacity: 0.82 },
 })

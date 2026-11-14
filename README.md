@@ -114,6 +114,10 @@ npm install
 npx expo start
 ```
 
+La app móvil comparte con la web el catálogo, la autenticación, el perfil, las cotizaciones y las solicitudes de reserva. En el primer inicio presenta una bienvenida animada y un onboarding de tres pasos; la preferencia se guarda en el dispositivo para no repetirlo. El acceso permite iniciar sesión, registrarse y solicitar un restablecimiento de contraseña por correo.
+
+Para el emulador Android, configura `EXPO_PUBLIC_API_URL=http://10.0.2.2:8000/api/v1`; en un teléfono físico, usa la IP local del computador y asegúrate de que el backend escuche en la red local. Las reservas son solicitudes sujetas a confirmación; la app no procesa pagos en línea.
+
 ---
 
 ## Documentación Técnica (`Libreto/`)
