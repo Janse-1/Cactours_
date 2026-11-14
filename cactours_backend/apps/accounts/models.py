@@ -94,3 +94,44 @@ class Empleado(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"{self.persona} - {self.cargo} ({self.get_estado_display()})"
+
+
+class TokenRevocado(TimeStampedModel):
+    """
+    Lista negra (Blacklist) de tokens revocados antes de su expiración natural.
+    Permite invalidar access tokens y refresh tokens en cierre de sesión (logout) o rotación.
+    """
+
+    token_hash = models.CharField(
+        max_length=64,
+        unique=True,
+        db_index=True,
+        verbose_name="Hash SHA-256 del token",
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="tokens_revocados",
+        null=True,
+        blank=True,
+        verbose_name="Usuario propietario",
+    )
+    motivo = models.CharField(
+        max_length=50,
+        default="LOGOUT",
+        verbose_name="Motivo de revocación",
+    )
+    expiracion = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Fecha de expiración estimada",
+    )
+
+    class Meta:
+        verbose_name = "Token Revocado"
+        verbose_name_plural = "Tokens Revocados"
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"Token revocado ({self.motivo}) - {self.token_hash[:12]}..."
+
