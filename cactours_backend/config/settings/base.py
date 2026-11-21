@@ -138,6 +138,10 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# --- Configuración de Correo Transaccional ---
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "no-reply@cactours.com")
+EMAIL_SUBJECT_PREFIX = "[Cactours] "
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- CORS para clientes Web (Vue.js) y Móvil (React Native) ---

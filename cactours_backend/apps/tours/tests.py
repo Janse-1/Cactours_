@@ -133,3 +133,22 @@ class ToursCatalogTests(TestCase):
         )
         self.assertEqual(resp.status_code, 400)
         self.assertIn("al menos 1", resp.json()["error"])
+    def test_tour_serializers_structure_and_types(self):
+        from .serializers import OpcionTourSerializer, TourDetailSerializer, TourListSerializer
+
+        list_data = TourListSerializer(self.tour_cabo).data
+        self.assertEqual(list_data["id"], self.tour_cabo.id)
+        self.assertEqual(list_data["nombre_tour"], "Expedición Cabo de la Vela")
+        self.assertEqual(list_data["costo"], "180000.00")
+        self.assertEqual(list_data["costo_num"], 180000.0)
+        self.assertIn("imagen_portada", list_data)
+        self.assertIn("imagenes", list_data)
+
+        detail_data = TourDetailSerializer(self.tour_cabo).data
+        self.assertIn("opciones_disponibles", detail_data)
+        self.assertEqual(len(detail_data["opciones_disponibles"]), 1)
+        self.assertEqual(detail_data["opciones_disponibles"][0]["nombre_op"], "Almuerzo Típico")
+
+        opcion_data = OpcionTourSerializer(self.opcion_almuerzo).data
+        self.assertEqual(opcion_data["precio_adic"], "35000.00")
+        self.assertEqual(opcion_data["precio_adic_num"], 35000.0)

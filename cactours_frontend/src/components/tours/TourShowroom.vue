@@ -171,21 +171,25 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { gsap } from 'gsap'
-import { ClampToEdgeWrapping, DoubleSide, SRGBColorSpace } from 'three/src/constants.js'
-import { PerspectiveCamera } from 'three/src/cameras/PerspectiveCamera.js'
-import { BoxGeometry } from 'three/src/geometries/BoxGeometry.js'
-import { IcosahedronGeometry } from 'three/src/geometries/IcosahedronGeometry.js'
-import { PlaneGeometry } from 'three/src/geometries/PlaneGeometry.js'
-import { TorusGeometry } from 'three/src/geometries/TorusGeometry.js'
-import { Raycaster } from 'three/src/core/Raycaster.js'
-import { Group } from 'three/src/objects/Group.js'
-import { Mesh } from 'three/src/objects/Mesh.js'
-import { MeshBasicMaterial } from 'three/src/materials/MeshBasicMaterial.js'
-import { TextureLoader } from 'three/src/loaders/TextureLoader.js'
-import { MathUtils } from 'three/src/math/MathUtils.js'
-import { Vector2 } from 'three/src/math/Vector2.js'
-import { Scene } from 'three/src/scenes/Scene.js'
-import { WebGLRenderer } from 'three/src/renderers/WebGLRenderer.js'
+import { 
+  ClampToEdgeWrapping, 
+  DoubleSide, 
+  SRGBColorSpace, 
+  PerspectiveCamera, 
+  BoxGeometry, 
+  IcosahedronGeometry, 
+  PlaneGeometry, 
+  TorusGeometry, 
+  Raycaster, 
+  Group, 
+  Mesh, 
+  MeshBasicMaterial, 
+  TextureLoader, 
+  MathUtils, 
+  Vector2, 
+  Scene, 
+  WebGLRenderer 
+} from 'three'
 import { ArrowLeft, ArrowRight, ArrowUpRight, Compass, MapPin } from 'lucide-vue-next'
 import { resolveTourCover, tourMediaShowcases } from '@/data/tourMedia'
 

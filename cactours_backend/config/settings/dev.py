@@ -19,7 +19,9 @@ ALLOWED_HOSTS = env_list(
     default=["localhost", "127.0.0.1", "10.0.2.2", "testserver"],
 )
 
-# Selección de motor de base de datos:
+# En desarrollo los correos se muestran directamente en la consola sin requerir servidor SMTP
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
 # Usa MySQL si DB_ENGINE=mysql y DB_PASSWORD está configurado en .env;
 # de lo contrario o durante pruebas automatizadas (`manage.py test`), usa SQLite local.
 _db_engine = os.environ.get("DB_ENGINE", "sqlite").lower()
