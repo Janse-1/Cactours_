@@ -5,9 +5,6 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "splash": {
-      "backgroundColor": "#026374"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.cactours.mobile"

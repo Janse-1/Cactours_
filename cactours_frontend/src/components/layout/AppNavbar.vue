@@ -21,6 +21,16 @@
         <Menu v-else :size="21" aria-hidden="true" />
       </button>
 
+      <RouterLink
+        to="/admin-demo"
+        class="admin-shortcut"
+        aria-label="Abrir panel administrativo"
+        @click="closeMenu"
+      >
+        <ShieldCheck :size="18" aria-hidden="true" />
+        <span>Panel Admin</span>
+      </RouterLink>
+
       <nav
         id="primary-navigation"
         class="nav-links"
@@ -50,7 +60,7 @@
 <script setup>
 import { ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { ArrowUpRight, Menu, X } from 'lucide-vue-next'
+import { ArrowUpRight, Menu, ShieldCheck, X } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 
 const authStore = useAuthStore()
@@ -174,6 +184,53 @@ async function handleLogout() {
   display: flex;
   align-items: center;
   gap: clamp(1rem, 2.4vw, 2rem);
+}
+
+.admin-shortcut {
+  display: inline-flex;
+  min-height: 42px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  order: 4;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 999px;
+  padding: 0.55rem 0.9rem;
+  background: #f2b84b;
+  box-shadow:
+    0 8px 24px rgba(242, 184, 75, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  color: #17383a;
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.admin-shortcut::after {
+  display: none;
+}
+
+.admin-shortcut:hover,
+.admin-shortcut.router-link-exact-active {
+  background: #ffd36f;
+  box-shadow:
+    0 10px 28px rgba(242, 184, 75, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  color: #17383a;
+  transform: translateY(-2px);
+}
+
+.nav-links .role-switch {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .nav-links a {
@@ -317,6 +374,17 @@ async function handleLogout() {
   .menu-toggle {
     display: inline-flex;
     flex: 0 0 auto;
+  }
+
+  .admin-shortcut {
+    width: 44px;
+    min-height: 44px;
+    border-radius: 50%;
+    padding: 0;
+  }
+
+  .admin-shortcut span {
+    display: none;
   }
 
   .nav-links {
