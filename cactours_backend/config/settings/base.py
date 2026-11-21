@@ -170,6 +170,34 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 12,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Cactours API",
+    "DESCRIPTION": (
+        "API REST versionada de Cactours para los clientes Web Vue.js y Mobile React Native."
+    ),
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SCHEMA_PATH_PREFIX": "/api/v1",
+    "COMPONENT_SPLIT_REQUEST": True,
+    "TAGS": [
+        {"name": "auth", "description": "Registro, autenticación y recuperación de cuenta"},
+        {"name": "tours", "description": "Catálogo y opciones de tours"},
+        {"name": "bookings", "description": "Cotización y solicitudes de reserva"},
+        {"name": "payments", "description": "Intenciones y registro de pagos"},
+    ],
+    "SECURITY": [{"bearerAuth": []}],
+    "APPEND_COMPONENTS": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "Cactours Bearer Token",
+            }
+        }
+    },
 }
 
 API_TOKEN_TTL_HOURS = int(os.environ.get("API_TOKEN_TTL_HOURS", "24"))
