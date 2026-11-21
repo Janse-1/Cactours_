@@ -4,6 +4,7 @@ from decimal import Decimal
 from django.test import TestCase
 from apps.accounts.services import AccountService
 from apps.tours.models import EstadoTour, OpcionTour, Tour
+from .models import EstadoReserva
 
 
 class BookingsBusinessLogicTests(TestCase):
@@ -29,6 +30,14 @@ class BookingsBusinessLogicTests(TestCase):
             descripcion="Recogida en hotel",
             precio_adic=Decimal("50000.00"),
             cobro_por_persona=True,
+            activa=True,
+        )
+        self.opcion_ajena = OpcionTour.objects.create(
+            nombre_op="Buceo Autónomo",
+            descripcion="No aplica para Montes de Oca",
+            precio_adic=Decimal("150000.00"),
+            cobro_por_persona=True,
+            activa=True,
         )
         self.tour = Tour.objects.create(
             nombre_tour="Montes de Oca",
@@ -85,3 +94,136 @@ class BookingsBusinessLogicTests(TestCase):
             HTTP_AUTHORIZATION=f"Bearer {token_b}",
         )
         self.assertEqual(detail_b.status_code, 404)
+
+    def test_cotizar_excede_cupo_maximo_retorna_400(self):
+        """LÍMITE: Cotizar más personas que el cupo máximo permitido del tour."""
+        resp = self.client.post(
+            "/api/v1/bookings/cotizar/",
+            data=json.dumps(
+                {
+                    "tour_id": self.tour.id,
+                    "cant_personas": 15,  # Cupo máximo es 10
+                }
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("cupo máximo", resp.json()["error"])
+
+    def test_cotizar_personas_menor_a_uno_falla(self):
+        """LÍMITE: Cantidad de personas menor a 1."""
+        resp = self.client.post(
+            "/api/v1/bookings/cotizar/",
+            data=json.dumps({"tour_id": self.tour.id, "cant_personas": 0}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("al menos 1", resp.json()["error"])
+
+    def test_cotizar_opcion_no_pertenece_al_tour_falla(self):
+        """NEGATIVA: Intentar incluir una opción adicional no asociada al tour."""
+        resp = self.client.post(
+            "/api/v1/bookings/cotizar/",
+            data=json.dumps(
+                {
+                    "tour_id": self.tour.id,
+                    "cant_personas": 2,
+                    "opciones_ids": [self.opcion_ajena.id],
+                }
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("no aplica", resp.json()["error"])
+
+    def test_cotizar_tour_inexistente_retorna_404(self):
+        """NEGATIVA: Cotizar sobre un tour que no existe."""
+        resp = self.client.post(
+            "/api/v1/bookings/cotizar/",
+            data=json.dumps({"tour_id": 99999, "cant_personas": 2}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 404)
+
+    def test_cliente_puede_cancelar_su_propia_reserva(self):
+        """POSITIVA: Un usuario autenticado puede cancelar su propia reserva."""
+        login_a = self.client.post(
+            "/api/v1/auth/login/",
+            data=json.dumps({"correo": "carlos@example.com", "password": "PasswordSeguro123!"}),
+            content_type="application/json",
+        ).json()
+        token_a = login_a["data"]["tokens"]["access"]
+
+        create_resp = self.client.post(
+            "/api/v1/bookings/",
+            data=json.dumps(
+                {
+                    "tour_id": self.tour.id,
+                    "lugar_salida": "Riohacha",
+                    "cant_personas": 2,
+                    "medio_pago": "TRANSFERENCIA",
+                }
+            ),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token_a}",
+        )
+        reserva_id = create_resp.json()["data"]["reserva"]["id"]
+
+        patch_resp = self.client.patch(
+            f"/api/v1/bookings/{reserva_id}/",
+            data=json.dumps({"estado": "CANCELADA"}),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token_a}",
+        )
+        self.assertEqual(patch_resp.status_code, 200)
+        self.assertEqual(patch_resp.json()["data"]["reserva"]["estado"], EstadoReserva.CANCELADA)
+
+    def test_cliente_no_puede_cancelar_reserva_ajena(self):
+        """SEGURIDAD: El Cliente B no puede cancelar la reserva del Cliente A."""
+        login_a = self.client.post(
+            "/api/v1/auth/login/",
+            data=json.dumps({"correo": "carlos@example.com", "password": "PasswordSeguro123!"}),
+            content_type="application/json",
+        ).json()
+        token_a = login_a["data"]["tokens"]["access"]
+
+        login_b = self.client.post(
+            "/api/v1/auth/login/",
+            data=json.dumps({"correo": "laura@example.com", "password": "PasswordSeguro123!"}),
+            content_type="application/json",
+        ).json()
+        token_b = login_b["data"]["tokens"]["access"]
+
+        create_resp = self.client.post(
+            "/api/v1/bookings/",
+            data=json.dumps(
+                {
+                    "tour_id": self.tour.id,
+                    "lugar_salida": "Riohacha",
+                    "cant_personas": 1,
+                    "medio_pago": "EFECTIVO",
+                }
+            ),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token_a}",
+        )
+        reserva_id = create_resp.json()["data"]["reserva"]["id"]
+
+        # Cliente B intenta cancelar la reserva de A
+        patch_b = self.client.patch(
+            f"/api/v1/bookings/{reserva_id}/",
+            data=json.dumps({"estado": "CANCELADA"}),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token_b}",
+        )
+        self.assertEqual(patch_b.status_code, 403)
+        self.assertIn("No tienes permiso", patch_b.json()["error"])
+
+    def test_solicitud_reserva_sin_token_retorna_401(self):
+        """SEGURIDAD: Crear reserva requiere autenticación."""
+        resp = self.client.post(
+            "/api/v1/bookings/",
+            data=json.dumps({"tour_id": self.tour.id, "cant_personas": 2}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 401)

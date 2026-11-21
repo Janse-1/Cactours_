@@ -11,6 +11,8 @@
 - [x] Crear estructura del frontend web en **Vue.js 3 + Vite** (`cactours_frontend/`).
 - [x] Crear estructura de la app móvil en **React Native + Expo** (`cactours_mobile/`).
 - [x] Añadir y ejecutar pruebas automatizadas de negocio y seguridad en el backend.
+- [x] [QA #7] Diseñar matriz de pruebas funcionales Web y API (`docs/qa/matriz_pruebas_funcionales.md` y `.csv`).
+- [x] [QA #6] Ampliar cobertura de pruebas automatizadas de API y reglas de negocio en Django (33 pruebas en `apps.*.tests`).
 
 ## Fase 2 — Evolución Funcional y Experiencia de Usuario
 
