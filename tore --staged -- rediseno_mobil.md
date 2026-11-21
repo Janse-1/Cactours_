@@ -1,0 +1,22 @@
+ README.md                                          |   4 [32m+[m
+ cactours_mobile/App.js                             | 177 [32m++++[m[31m-[m
+ cactours_mobile/app.json                           |   5 [32m+[m[31m-[m
+ cactours_mobile/package-lock.json                  | 404 [32m+++++[m[31m------[m
+ cactours_mobile/package.json                       |  10 [32m+[m[31m-[m
+ cactours_mobile/src/api/client.js                  | 128 [32m+++[m[31m-[m
+ cactours_mobile/src/components/ui.js               | 381 [32m+++++++++++[m
+ cactours_mobile/src/screens/AuthScreen.js          | 538 [32m+++++++++++++++[m
+ cactours_mobile/src/screens/BookingScreen.js       | 457 [32m+++++++++++++[m
+ cactours_mobile/src/screens/CatalogScreen.js       | 748 [32m+++++++++[m[31m------------[m
+ cactours_mobile/src/screens/HomeScreen.js          | 547 [32m+++++++++++++++[m
+ cactours_mobile/src/screens/MainTabsScreen.js      | 106 [32m+++[m
+ cactours_mobile/src/screens/OnboardingScreen.js    | 254 [32m+++++++[m
+ cactours_mobile/src/screens/PasswordResetScreen.js | 202 [32m++++++[m
+ cactours_mobile/src/screens/ProfileScreen.js       | 513 [32m++++++++++++++[m
+ cactours_mobile/src/screens/SplashScreen.js        | 163 [32m+++++[m
+ cactours_mobile/src/screens/TourDetailScreen.js    | 216 [32m++++++[m
+ cactours_mobile/src/theme/tokens.js                |  90 [32m++[m[31m-[m
+ cactours_mobile/src/utils/onboardingStorage.js     |  21 [32m+[m
+ cactours_mobile/src/utils/tourMedia.js             |  43 [32m++[m
+ rediseno_mobil.md                                  | 243 [32m+++++++[m
+ 21 files changed, 4554 insertions(+), 696 deletions(-)

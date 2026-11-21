@@ -7,6 +7,7 @@ import BookingCheckoutView from '@/views/BookingCheckoutView.vue'
 import UserProfileView from '@/views/UserProfileView.vue'
 import LoginView from '@/views/LoginView.vue'
 import RegisterView from '@/views/RegisterView.vue'
+import AdminDemoView from '@/views/AdminDemoView.vue'
 
 const routes = [
   { path: '/', name: 'home', component: HomeView },
@@ -26,6 +27,11 @@ const routes = [
   },
   { path: '/login', name: 'login', component: LoginView },
   { path: '/registro', name: 'register', component: RegisterView },
+  {
+    path: '/admin-demo',
+    name: 'admin-demo',
+    component: AdminDemoView,
+  },
 ]
 
 const router = createRouter({
