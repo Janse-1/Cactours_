@@ -7,6 +7,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import include, path
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from .admin_demo import (
     admin_dashboard_view,
     admin_tours_view,
@@ -42,6 +43,9 @@ urlpatterns = [
     path("api/v1/admin/demo/bookings/", admin_bookings_view, name="admin-demo-bookings"),
     path("api/v1/admin/demo/bookings/<int:reserva_id>/", admin_booking_detail_view, name="admin-demo-booking-detail"),
     path("api/v1/health/", api_healthcheck, name="api-health"),
+    path("api/v1/schema/", SpectacularAPIView.as_view(), name="api-schema"),
+    path("api/v1/docs/", SpectacularSwaggerView.as_view(url_name="api-schema"), name="api-docs"),
+    path("api/v1/redoc/", SpectacularRedocView.as_view(url_name="api-schema"), name="api-redoc"),
     path("api/v1/auth/", include("apps.accounts.urls")),
     path("api/v1/tours/", include("apps.tours.urls")),
     path("api/v1/bookings/", include("apps.bookings.urls")),

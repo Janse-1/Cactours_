@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ImagenTour, OpcionTour, Tour
+from .models import ImagenTour, OpcionTour, Tour, TourSalida
 
 
 class ImagenTourInline(admin.TabularInline):
@@ -28,3 +28,9 @@ class OpcionTourAdmin(admin.ModelAdmin):
 class ImagenTourAdmin(admin.ModelAdmin):
     list_display = ("tour", "descripcion", "orden")
     list_filter = ("tour",)
+
+
+@admin.register(TourSalida)
+class TourSalidaAdmin(admin.ModelAdmin):
+    list_display = ("tour", "fecha", "hora", "cupo_total", "cupo_disponible", "activa")
+    list_filter = ("activa", "fecha", "tour")

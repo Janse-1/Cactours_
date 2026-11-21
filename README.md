@@ -84,6 +84,20 @@ python manage.py runserver
 | `GET / PATCH` | `/api/v1/bookings/<id>/` | Detalle o cancelación de una solicitud de reserva |
 | `GET / POST` | `/api/v1/payments/` | Consulta y registro de intenciones de pago |
 
+### 1.5 Contrato OpenAPI
+
+El contrato de integración está disponible mientras el backend ejecuta Django en desarrollo:
+
+- Esquema OpenAPI: `http://localhost:8000/api/v1/schema/`
+- Interfaz Swagger: `http://localhost:8000/api/v1/docs/`
+- Interfaz ReDoc: `http://localhost:8000/api/v1/redoc/`
+
+Los endpoints protegidos usan el esquema Bearer:
+
+```text
+Authorization: Bearer <access_token>
+```
+
 ---
 
 ## 2. Configuración del Frontend Web en Vue.js (`cactours_frontend`)
