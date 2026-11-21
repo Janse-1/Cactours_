@@ -85,7 +85,7 @@
           </div>
         </div>
 
-        <aside class="showroom-detail" aria-live="polite" data-showroom-enter>
+        <aside class="showroom-detail spotlight-card spotlight-card--flat" aria-live="polite" data-showroom-enter>
           <div class="detail-topline">
             <span class="detail-category">{{ activeTour.category }}</span>
           </div>
@@ -121,7 +121,7 @@
 
           <div class="showroom-actions">
             <div class="showroom-controls" aria-label="Cambiar expedición">
-              <button type="button" aria-label="Expedición anterior" @click="showPrevious">
+              <button type="button" class="magnetic-button" aria-label="Expedición anterior" @click="showPrevious">
                 <ArrowLeft :size="19" aria-hidden="true" />
               </button>
               <div class="showroom-pagination" aria-label="Seleccionar expedición">
@@ -135,7 +135,7 @@
                   @click="selectTour(index)"
                 ></button>
               </div>
-              <button type="button" aria-label="Siguiente expedición" @click="showNext">
+              <button type="button" class="magnetic-button" aria-label="Siguiente expedición" @click="showNext">
                 <ArrowRight :size="19" aria-hidden="true" />
               </button>
             </div>
@@ -143,7 +143,7 @@
             <a
               v-if="isLocalCollection"
               :href="activeTour.contactUrl"
-              class="detail-cta"
+              class="detail-cta magnetic-button"
             >
               Consultar disponibilidad
               <ArrowUpRight :size="17" aria-hidden="true" />
@@ -151,7 +151,7 @@
             <RouterLink
               v-else
               :to="`/tours/${activeTour.id}`"
-              class="detail-cta"
+              class="detail-cta magnetic-button"
             >
               Ver detalles
               <ArrowUpRight :size="17" aria-hidden="true" />
@@ -171,21 +171,25 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { gsap } from 'gsap'
-import { ClampToEdgeWrapping, DoubleSide, SRGBColorSpace } from 'three/src/constants.js'
-import { PerspectiveCamera } from 'three/src/cameras/PerspectiveCamera.js'
-import { BoxGeometry } from 'three/src/geometries/BoxGeometry.js'
-import { IcosahedronGeometry } from 'three/src/geometries/IcosahedronGeometry.js'
-import { PlaneGeometry } from 'three/src/geometries/PlaneGeometry.js'
-import { TorusGeometry } from 'three/src/geometries/TorusGeometry.js'
-import { Raycaster } from 'three/src/core/Raycaster.js'
-import { Group } from 'three/src/objects/Group.js'
-import { Mesh } from 'three/src/objects/Mesh.js'
-import { MeshBasicMaterial } from 'three/src/materials/MeshBasicMaterial.js'
-import { TextureLoader } from 'three/src/loaders/TextureLoader.js'
-import { MathUtils } from 'three/src/math/MathUtils.js'
-import { Vector2 } from 'three/src/math/Vector2.js'
-import { Scene } from 'three/src/scenes/Scene.js'
-import { WebGLRenderer } from 'three/src/renderers/WebGLRenderer.js'
+import { 
+  ClampToEdgeWrapping, 
+  DoubleSide, 
+  SRGBColorSpace, 
+  PerspectiveCamera, 
+  BoxGeometry, 
+  IcosahedronGeometry, 
+  PlaneGeometry, 
+  TorusGeometry, 
+  Raycaster, 
+  Group, 
+  Mesh, 
+  MeshBasicMaterial, 
+  TextureLoader, 
+  MathUtils, 
+  Vector2, 
+  Scene, 
+  WebGLRenderer 
+} from 'three'
 import { ArrowLeft, ArrowRight, ArrowUpRight, Compass, MapPin } from 'lucide-vue-next'
 import { resolveTourCover, tourMediaShowcases } from '@/data/tourMedia'
 

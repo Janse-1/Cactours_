@@ -30,7 +30,7 @@
     />
 
     <div v-if="authStore.user" class="profile-grid">
-      <section class="profile-card profile-card--personal">
+      <section class="profile-card profile-card--personal spotlight-card">
         <div class="profile-card-heading">
           <span class="profile-icon"><UserRound :size="20" aria-hidden="true" /></span>
           <div>
@@ -59,7 +59,7 @@
         </dl>
       </section>
 
-      <section class="profile-card profile-card--bookings">
+      <section class="profile-card profile-card--bookings spotlight-card spotlight-card--flat">
         <header class="bookings-heading">
           <div>
             <p class="section-eyebrow">Tus próximos recuerdos</p>
@@ -92,7 +92,11 @@
         </FeedbackState>
 
         <div v-else-if="bookingsStore.bookings.length" class="booking-list">
-          <article v-for="booking in bookingsStore.bookings" :key="booking.id" class="booking-card">
+          <article
+            v-for="booking in bookingsStore.bookings"
+            :key="booking.id"
+            class="booking-card spotlight-card"
+          >
             <div class="booking-card-top">
               <span class="booking-code">{{ booking.codigo_reserva }}</span>
               <span class="badge status-pill" :class="`status-pill--${statusClass(booking.estado_display)}`">
@@ -134,7 +138,7 @@
             <button
               v-if="booking.estado === 'PENDIENTE'"
               type="button"
-              class="booking-cancel"
+              class="booking-cancel magnetic-button"
               :disabled="bookingsStore.cancellingBookingId === booking.id"
               @click="cancelBooking(booking)"
             >

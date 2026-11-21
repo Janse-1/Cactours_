@@ -47,7 +47,7 @@
 
       <form id="booking-form" class="checkout-layout" novalidate @submit.prevent="submitBooking">
         <div class="checkout-main">
-          <section class="checkout-section">
+          <section class="checkout-section spotlight-card spotlight-card--flat">
             <div class="checkout-section-heading">
               <span>01</span>
               <div>
@@ -134,7 +134,10 @@
             </div>
           </section>
 
-          <section v-if="tour.opciones_disponibles?.length" class="checkout-section">
+          <section
+            v-if="tour.opciones_disponibles?.length"
+            class="checkout-section spotlight-card spotlight-card--flat"
+          >
             <div class="checkout-section-heading">
               <span>02</span>
               <div>
@@ -160,7 +163,7 @@
             </div>
           </section>
 
-          <section class="checkout-section checkout-section--comments">
+          <section class="checkout-section checkout-section--comments spotlight-card spotlight-card--flat">
             <div class="checkout-section-heading">
               <span>{{ tour.opciones_disponibles?.length ? '03' : '02' }}</span>
               <div>
@@ -179,7 +182,7 @@
           </section>
         </div>
 
-        <aside class="booking-summary">
+        <aside class="booking-summary spotlight-card spotlight-card--flat">
           <div class="summary-image">
             <img v-if="tourCoverImage && !summaryImageUnavailable" :src="tourCoverImage" :alt="tour.nombre_tour" loading="lazy" @error="summaryImageUnavailable = true" />
             <div v-else class="summary-image-placeholder"><Compass :size="24" aria-hidden="true" /></div>

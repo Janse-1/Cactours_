@@ -8,6 +8,13 @@ from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from .admin_demo import (
+    admin_dashboard_view,
+    admin_tours_view,
+    admin_tour_detail_view,
+    admin_bookings_view,
+    admin_booking_detail_view,
+)
 
 
 def api_healthcheck(request):
@@ -30,6 +37,11 @@ def api_healthcheck(request):
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/v1/admin/demo/dashboard/", admin_dashboard_view, name="admin-demo-dashboard"),
+    path("api/v1/admin/demo/tours/", admin_tours_view, name="admin-demo-tours"),
+    path("api/v1/admin/demo/tours/<int:tour_id>/", admin_tour_detail_view, name="admin-demo-tour-detail"),
+    path("api/v1/admin/demo/bookings/", admin_bookings_view, name="admin-demo-bookings"),
+    path("api/v1/admin/demo/bookings/<int:reserva_id>/", admin_booking_detail_view, name="admin-demo-booking-detail"),
     path("api/v1/health/", api_healthcheck, name="api-health"),
     path("api/v1/schema/", SpectacularAPIView.as_view(), name="api-schema"),
     path("api/v1/docs/", SpectacularSwaggerView.as_view(url_name="api-schema"), name="api-docs"),

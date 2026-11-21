@@ -1,6 +1,6 @@
 <template>
   <section
-    class="feedback-state"
+    class="feedback-state spotlight-card spotlight-card--flat"
     :class="`feedback-state--${variant}`"
     :role="variant === 'error' ? 'alert' : 'status'"
     :aria-live="variant === 'error' ? 'assertive' : 'polite'"

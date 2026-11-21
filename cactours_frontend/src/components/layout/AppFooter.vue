@@ -22,7 +22,7 @@
     </div>
     <div class="container footer-copy">
       <p>&copy; {{ new Date().getFullYear() }} Cactours. Todos los derechos reservados.</p>
-      <a href="#inicio" class="back-to-top" @click.prevent="scrollToTop">
+      <a href="#inicio" class="back-to-top magnetic-button" @click.prevent="scrollToTop">
         Volver arriba <ArrowUpRight :size="14" aria-hidden="true" />
       </a>
     </div>
