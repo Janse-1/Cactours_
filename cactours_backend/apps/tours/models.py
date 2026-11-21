@@ -104,6 +104,39 @@ class Tour(TimeStampedModel):
         return f"{self.nombre_tour} - {self.ciudad_destino}"
 
 
+class TourSalida(TimeStampedModel):
+    """Cupo disponible para una salida concreta de un tour en una fecha."""
+
+    tour = models.ForeignKey(
+        Tour,
+        on_delete=models.PROTECT,
+        related_name="salidas",
+        verbose_name="Tour",
+    )
+    fecha = models.DateField(verbose_name="Fecha de salida")
+    hora = models.TimeField(null=True, blank=True, verbose_name="Hora de salida")
+    cupo_total = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1)],
+        verbose_name="Cupo total",
+    )
+    cupo_disponible = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name="Cupo disponible",
+    )
+    activa = models.BooleanField(default=True, verbose_name="Salida activa")
+
+    class Meta:
+        verbose_name = "Salida de tour"
+        verbose_name_plural = "Salidas de tour"
+        unique_together = ("tour", "fecha")
+        ordering = ["fecha", "hora"]
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.cupo_disponible = self.cupo_total
+        super().save(*args, **kwargs)
+
+
 class ImagenTour(TimeStampedModel):
     """Galería de imágenes asociadas a un Tour."""
 

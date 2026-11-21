@@ -88,6 +88,7 @@ def booking_detail_view(request, reserva_id: int):
             user=request.user,
             reserva_id=reserva_id,
             nuevo_estado=payload.get("estado", ""),
+            motivo=payload.get("motivo", ""),
         )
         return api_response(
             {"reserva": serialize_reserva(reserva)},

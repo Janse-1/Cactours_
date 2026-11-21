@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Reserva, ReservaOpcion
+from .models import CambioEstadoReserva, Reserva, ReservaOpcion
 
 
 class ReservaOpcionInline(admin.TabularInline):
@@ -30,3 +30,10 @@ class ReservaAdmin(admin.ModelAdmin):
     )
     readonly_fields = ("codigo_reserva", "subtotal_base", "subtotal_opciones", "costo_total", "created_at", "updated_at")
     inlines = [ReservaOpcionInline]
+
+
+@admin.register(CambioEstadoReserva)
+class CambioEstadoReservaAdmin(admin.ModelAdmin):
+    list_display = ("reserva", "usuario", "estado_anterior", "estado_nuevo", "created_at")
+    list_filter = ("estado_anterior", "estado_nuevo", "created_at")
+    readonly_fields = ("reserva", "usuario", "estado_anterior", "estado_nuevo", "motivo", "created_at", "updated_at")

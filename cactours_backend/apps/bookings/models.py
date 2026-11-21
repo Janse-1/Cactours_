@@ -7,6 +7,7 @@ import uuid
 from decimal import Decimal
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.conf import settings
 from django.utils import timezone
 from apps.common.models import TimeStampedModel
 
@@ -56,6 +57,14 @@ class Reserva(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name="reservas",
         verbose_name="Tour reservado",
+    )
+    salida = models.ForeignKey(
+        "tours.TourSalida",
+        on_delete=models.PROTECT,
+        related_name="reservas",
+        null=True,
+        blank=True,
+        verbose_name="Salida reservada",
     )
     lugar_salida = models.CharField(max_length=120, verbose_name="Lugar de salida")
     destino = models.CharField(max_length=120, verbose_name="Ciudad / Destino")
@@ -149,3 +158,31 @@ class ReservaOpcion(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"{self.nombre_opcion} en {self.reserva.codigo_reserva}"
+
+
+class CambioEstadoReserva(TimeStampedModel):
+    """Registro auditable de cada transición de estado de una reserva."""
+
+    reserva = models.ForeignKey(
+        Reserva,
+        on_delete=models.PROTECT,
+        related_name="cambios_estado",
+        verbose_name="Reserva",
+    )
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="cambios_estado_reserva",
+        verbose_name="Usuario",
+    )
+    estado_anterior = models.CharField(max_length=20, choices=EstadoReserva.choices)
+    estado_nuevo = models.CharField(max_length=20, choices=EstadoReserva.choices)
+    motivo = models.TextField(blank=True, default="")
+
+    class Meta:
+        verbose_name = "Cambio de estado de reserva"
+        verbose_name_plural = "Cambios de estado de reserva"
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.reserva.codigo_reserva}: {self.estado_anterior} -> {self.estado_nuevo}"

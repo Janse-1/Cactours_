@@ -13,9 +13,9 @@ from django.db.models import F, QuerySet
 from django.utils import timezone
 from apps.accounts.models import Cliente, Persona
 from apps.common.http import DomainError
-from apps.tours.models import OpcionTour
+from apps.tours.models import OpcionTour, TourSalida
 from apps.tours.services import TourCatalogService
-from .models import EstadoReserva, MedioPagoPreferido, Reserva, ReservaOpcion
+from .models import CambioEstadoReserva, EstadoReserva, MedioPagoPreferido, Reserva, ReservaOpcion
 
 
 class BookingService:
@@ -50,14 +50,20 @@ class BookingService:
         desglose_opciones = []
 
         if opciones_ids:
-            ids_limpios = list({int(op_id) for op_id in opciones_ids if str(op_id).isdigit()})
+            ids_limpios = list({
+                int(op_id)
+                for op_id in opciones_ids
+                if str(op_id).lstrip("-").isdigit() and int(op_id) > 0
+            })
+            if len(ids_limpios) != len(opciones_ids):
+                raise DomainError("Las opciones adicionales deben enviarse mediante identificadores válidos.")
             opciones_qs = OpcionTour.objects.filter(id__in=ids_limpios, activa=True)
             if opciones_qs.count() != len(ids_limpios):
                 raise DomainError("Una o más opciones adicionales seleccionadas no son válidas o están inactivas.")
 
             opciones_del_tour = set(tour.opciones.values_list("id", flat=True))
             for opcion in opciones_qs:
-                if opciones_del_tour and opcion.id not in opciones_del_tour:
+                if opcion.id not in opciones_del_tour:
                     raise DomainError(
                         f"La opción '{opcion.nombre_op}' no aplica para el tour '{tour.nombre_tour}'."
                     )
@@ -149,9 +155,21 @@ class BookingService:
         cliente, _ = Cliente.objects.get_or_create(persona=persona)
 
         tour = cotizacion["tour"]
+        salida = (
+            TourSalida.objects.select_for_update()
+            .filter(tour=tour, fecha=fecha_tour, activa=True)
+            .first()
+        )
+        if salida:
+            if cotizacion["cant_personas"] > salida.cupo_disponible:
+                raise DomainError(
+                    f"No hay cupo suficiente para esta salida. Cupo disponible: {salida.cupo_disponible}.",
+                    status_code=409,
+                )
         reserva = Reserva.objects.create(
             cliente=cliente,
             tour=tour,
+            salida=salida,
             lugar_salida=lugar_salida,
             destino=tour.ciudad_destino,
             fecha=fecha_tour,
@@ -176,6 +194,9 @@ class BookingService:
             )
 
         Cliente.objects.filter(pk=cliente.pk).update(contador_reservas=F("contador_reservas") + 1)
+        if salida:
+            salida.cupo_disponible -= cotizacion["cant_personas"]
+            salida.save(update_fields=["cupo_disponible", "updated_at"])
         return reserva
 
     @staticmethod
@@ -193,12 +214,19 @@ class BookingService:
 
     @staticmethod
     @transaction.atomic
-    def actualizar_estado_reserva(*, user, reserva_id: int, nuevo_estado: str) -> Reserva:
+    def actualizar_estado_reserva(
+        *,
+        user,
+        reserva_id: int,
+        nuevo_estado: str,
+        motivo: str = "",
+    ) -> Reserva:
         """
         Cambia el estado de una reserva verificando permisos por propietario y rol.
         """
         reserva = (
             Reserva.objects.select_related("tour", "cliente", "cliente__persona")
+            .select_for_update()
             .prefetch_related("detalle_opciones")
             .filter(pk=reserva_id)
             .first()
@@ -215,12 +243,53 @@ class BookingService:
         if estado_norm not in estados_validos:
             raise DomainError(f"Estado '{nuevo_estado}' inválido.")
 
-        if not user.is_staff:
+        estado_anterior = reserva.estado
+        if estado_norm == estado_anterior:
+            raise DomainError("La reserva ya se encuentra en ese estado.")
+
+        es_staff = bool(user.is_staff or user.is_superuser)
+        if not es_staff:
             if estado_norm != EstadoReserva.CANCELADA:
                 raise DomainError("Como cliente solo puedes solicitar la cancelación de tu reserva.", status_code=403)
-            if reserva.estado != EstadoReserva.PENDIENTE:
-                raise DomainError("Solo se pueden cancelar directamente solicitudes en estado PENDIENTE.")
+            if reserva.estado not in {EstadoReserva.PENDIENTE, EstadoReserva.CONFIRMADA}:
+                raise DomainError("Esta reserva no admite cancelación desde su estado actual.")
+        else:
+            transiciones_staff = {
+                (EstadoReserva.PENDIENTE, EstadoReserva.CONFIRMADA),
+                (EstadoReserva.PENDIENTE, EstadoReserva.CANCELADA),
+                (EstadoReserva.CONFIRMADA, EstadoReserva.COMPLETADA),
+                (EstadoReserva.CONFIRMADA, EstadoReserva.CANCELADA),
+            }
+            if (estado_anterior, estado_norm) not in transiciones_staff:
+                raise DomainError(
+                    f"La transición {estado_anterior} -> {estado_norm} no está permitida."
+                )
+
+        if estado_norm == EstadoReserva.CONFIRMADA and not reserva.salida_id:
+            raise DomainError(
+                "No se puede confirmar una reserva sin una salida real asociada por fecha.",
+                status_code=409,
+            )
+
+        if estado_anterior in {EstadoReserva.PENDIENTE, EstadoReserva.CONFIRMADA} and estado_norm == EstadoReserva.CANCELADA:
+            if reserva.salida_id:
+                salida = TourSalida.objects.select_for_update().get(pk=reserva.salida_id)
+                salida.cupo_disponible = min(
+                    salida.cupo_total,
+                    salida.cupo_disponible + reserva.cant_personas,
+                )
+                salida.save(update_fields=["cupo_disponible", "updated_at"])
+            Cliente.objects.filter(pk=reserva.cliente_id).filter(contador_reservas__gt=0).update(
+                contador_reservas=F("contador_reservas") - 1
+            )
 
         reserva.estado = estado_norm
         reserva.save(update_fields=["estado", "updated_at"])
+        CambioEstadoReserva.objects.create(
+            reserva=reserva,
+            usuario=user,
+            estado_anterior=estado_anterior,
+            estado_nuevo=estado_norm,
+            motivo=(motivo or "").strip(),
+        )
         return reserva

@@ -3,7 +3,10 @@ import json
 from decimal import Decimal
 from django.test import TestCase
 from apps.accounts.services import AccountService
-from apps.tours.models import EstadoTour, OpcionTour, Tour
+from apps.common.http import DomainError
+from apps.tours.models import EstadoTour, OpcionTour, Tour, TourSalida
+from apps.bookings.models import CambioEstadoReserva, EstadoReserva
+from apps.bookings.services import BookingService
 
 
 class BookingsBusinessLogicTests(TestCase):
@@ -85,3 +88,162 @@ class BookingsBusinessLogicTests(TestCase):
             HTTP_AUTHORIZATION=f"Bearer {token_b}",
         )
         self.assertEqual(detail_b.status_code, 404)
+
+    def test_opcion_ajena_se_rechaza_incluso_si_el_tour_no_tiene_opciones(self):
+        opcion_ajena = OpcionTour.objects.create(
+            nombre_op="Opción ajena",
+            precio_adic=Decimal("10000.00"),
+            cobro_por_persona=True,
+        )
+        tour_sin_opciones = Tour.objects.create(
+            nombre_tour="Tour sin opciones",
+            descripcion="Sin opciones asociadas",
+            ciudad_destino="Riohacha",
+            duracion_dias=1,
+            cupo_maximo=5,
+            costo=Decimal("100000.00"),
+            estado=EstadoTour.PUBLICADO,
+        )
+
+        with self.assertRaises(DomainError):
+            BookingService.cotizar_reserva(
+                tour_id=tour_sin_opciones.id,
+                cant_personas=2,
+                opciones_ids=[opcion_ajena.id],
+            )
+
+    def test_cliente_no_puede_confirmar_y_staff_si_registra_auditoria(self):
+        reserva = BookingService.crear_solicitud_reserva(
+            user=self.user_a,
+            tour_id=self.tour.id,
+            lugar_salida="Riohacha",
+            cant_personas=2,
+            medio_pago="EFECTIVO",
+        )
+        salida = TourSalida.objects.create(
+            tour=self.tour,
+            fecha=reserva.fecha,
+            cupo_total=10,
+        )
+        reserva.salida = salida
+        reserva.save(update_fields=["salida"])
+
+        with self.assertRaises(DomainError) as error:
+            BookingService.actualizar_estado_reserva(
+                user=self.user_a,
+                reserva_id=reserva.id,
+                nuevo_estado=EstadoReserva.CONFIRMADA,
+            )
+        self.assertEqual(error.exception.status_code, 403)
+
+        self.user_a.is_staff = True
+        self.user_a.save(update_fields=["is_staff"])
+        reserva_actualizada = BookingService.actualizar_estado_reserva(
+            user=self.user_a,
+            reserva_id=reserva.id,
+            nuevo_estado=EstadoReserva.CONFIRMADA,
+            motivo="Cupo validado",
+        )
+        self.assertEqual(reserva_actualizada.estado, EstadoReserva.CONFIRMADA)
+        self.assertTrue(
+            CambioEstadoReserva.objects.filter(
+                reserva=reserva,
+                usuario=self.user_a,
+                estado_anterior=EstadoReserva.PENDIENTE,
+                estado_nuevo=EstadoReserva.CONFIRMADA,
+            ).exists()
+        )
+
+    def test_cancelacion_libera_cupo_y_disminuye_contador(self):
+        salida = TourSalida.objects.create(
+            tour=self.tour,
+            fecha="2026-12-15",
+            cupo_total=5,
+        )
+        reserva = BookingService.crear_solicitud_reserva(
+            user=self.user_a,
+            tour_id=self.tour.id,
+            lugar_salida="Riohacha",
+            cant_personas=3,
+            medio_pago="EFECTIVO",
+            fecha="2026-12-15",
+        )
+        salida.refresh_from_db()
+        self.assertEqual(salida.cupo_disponible, 2)
+
+        reserva_cancelada = BookingService.actualizar_estado_reserva(
+            user=self.user_a,
+            reserva_id=reserva.id,
+            nuevo_estado=EstadoReserva.CANCELADA,
+            motivo="Cambio de planes",
+        )
+        salida.refresh_from_db()
+        reserva.refresh_from_db()
+        cliente = reserva.cliente
+        cliente.refresh_from_db()
+        self.assertEqual(reserva_cancelada.estado, EstadoReserva.CANCELADA)
+        self.assertEqual(salida.cupo_disponible, 5)
+        self.assertEqual(cliente.contador_reservas, 0)
+
+    def test_transicion_terminal_no_es_permitida(self):
+        reserva = BookingService.crear_solicitud_reserva(
+            user=self.user_a,
+            tour_id=self.tour.id,
+            lugar_salida="Riohacha",
+            cant_personas=1,
+            medio_pago="EFECTIVO",
+        )
+        reserva.estado = EstadoReserva.CANCELADA
+        reserva.save(update_fields=["estado"])
+
+        with self.assertRaises(DomainError):
+            BookingService.actualizar_estado_reserva(
+                user=self.user_a,
+                reserva_id=reserva.id,
+                nuevo_estado=EstadoReserva.PENDIENTE,
+            )
+
+    def test_segunda_solicitud_rechaza_cupo_insuficiente_por_salida(self):
+        TourSalida.objects.create(
+            tour=self.tour,
+            fecha="2026-12-20",
+            cupo_total=5,
+        )
+        BookingService.crear_solicitud_reserva(
+            user=self.user_a,
+            tour_id=self.tour.id,
+            lugar_salida="Riohacha",
+            cant_personas=4,
+            medio_pago="EFECTIVO",
+            fecha="2026-12-20",
+        )
+
+        with self.assertRaises(DomainError) as error:
+            BookingService.crear_solicitud_reserva(
+                user=self.user_b,
+                tour_id=self.tour.id,
+                lugar_salida="Riohacha",
+                cant_personas=2,
+                medio_pago="EFECTIVO",
+                fecha="2026-12-20",
+            )
+        self.assertEqual(error.exception.status_code, 409)
+
+    def test_confirmacion_sin_salida_real_es_rechazada(self):
+        reserva = BookingService.crear_solicitud_reserva(
+            user=self.user_a,
+            tour_id=self.tour.id,
+            lugar_salida="Riohacha",
+            cant_personas=1,
+            medio_pago="EFECTIVO",
+        )
+        self.user_a.is_staff = True
+        self.user_a.save(update_fields=["is_staff"])
+
+        with self.assertRaises(DomainError) as error:
+            BookingService.actualizar_estado_reserva(
+                user=self.user_a,
+                reserva_id=reserva.id,
+                nuevo_estado=EstadoReserva.CONFIRMADA,
+            )
+        self.assertEqual(error.exception.status_code, 409)
